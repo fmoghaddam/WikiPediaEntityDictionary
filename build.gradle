@@ -6,7 +6,9 @@ repositories {
     jcenter()
 }
 
-mainClassName="controler.EntityToAnchorText"
+//mainClassName="controler.EntityToAnchorText"
+mainClassName="controler.AnchorTextToEntity"
+
 
 applicationDefaultJvmArgs = ["-Xmx20g"]
 

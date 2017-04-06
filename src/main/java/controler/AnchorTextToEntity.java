@@ -5,35 +5,29 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
 import java.util.Vector;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.function.BiFunction;
 
 import org.apache.log4j.Logger;
 
+import model.Dictionary;
 import model.Entity;
 import util.HTMLLinkExtractor;
 import util.HTMLLinkExtractor.HtmlLink;
 
 public class AnchorTextToEntity {
 
+	private static final int NUMBER_OF_THREADS = 45;
 	private static final Logger LOG = Logger.getLogger(AnchorTextToEntity.class.getCanonicalName());
-	private static final ConcurrentHashMap<String, Set<String>> DICTIONARY = new ConcurrentHashMap<>();
+	private static final Dictionary DICTIONARY = new Dictionary();
 	private static final String WIKI_FILES_FOLDER = "data";
-	private static final BiFunction<Set<String>, Set<String>, Set<String>> biFunction = (set, string) -> {
-		set.addAll(string);
-		return set;
-	};
+	
 	private static Map<String, Entity> entityMap;
-	private static final ExecutorService executor = Executors.newFixedThreadPool(45);
+	private static final ExecutorService executor = Executors.newFixedThreadPool(NUMBER_OF_THREADS);
 
 	public static void main(String[] args) {
 		entityMap = EntityFileLoader.loadData();
@@ -50,11 +44,10 @@ public class AnchorTextToEntity {
 			}
 			executor.shutdown();
 			executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
-			printResult();
+			DICTIONARY.printResult();
 		} catch (final Exception exception) {
 			exception.printStackTrace();
 		}
-
 	}
 
 	private static Runnable handle(String pathToSubFolder) {
@@ -105,9 +98,8 @@ public class AnchorTextToEntity {
 
 									// linkTextRefactored =
 									// refactor(linkTextRefactored);
-									final Set<String> set = new HashSet<>();
-									set.add(entity.getEntityName());
-									DICTIONARY.merge(linkText.toString(), set, biFunction);
+									
+									DICTIONARY.merge(linkText.toString(), entity);
 									// DICTIONARY.merge(linkTextRefactored.toString(),set,
 									// biFunction);
 								}
@@ -166,10 +158,5 @@ public class AnchorTextToEntity {
 		return result;
 	}
 
-	private static void printResult() {
-		System.out.println("Size of map= " + DICTIONARY.size());
-		for (final Entry<String, Set<String>> entry : DICTIONARY.entrySet()) {
-			LOG.info(entry.getKey() + " ; " + entry.getValue());
-		}
-	}
+	
 }

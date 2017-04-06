@@ -1,2 +1,7 @@
 /data/*
 data.tar.gz
+/.gradle/
+/bin/
+/entities backup/
+/logbackup/
+/build/

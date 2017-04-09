@@ -34,6 +34,10 @@ public class AnchorTextToEntity {
 
 	public static void main(String[] args) {
 		entityMap = EntityFileLoader.loadData();
+		entityMap.values().stream().forEach(p -> {
+			System.err.println(p.getName());
+		});
+		//System.err.println(entityMap.get("France"));
 		checkWikiPages(entityMap);
 	}
 
@@ -72,10 +76,12 @@ public class AnchorTextToEntity {
 								final HtmlLink htmlLink = (HtmlLink) iterator.next();
 								final Entity entity = entityMap.get(htmlLink.getLink());
 								if (entity != null) {
-									// Remove exact names
-									// if(htmlLink.getLinkText().equals(entity.getName())){
-									// continue;
-									// }
+									// Remove exact names									
+									 if(htmlLink.getLinkText().equalsIgnoreCase(entity.getName()) 
+										 || htmlLink.getLinkText().equalsIgnoreCase(entity.getEntityName()) 
+										 || htmlLink.getLinkText().equalsIgnoreCase(entity.getEntityName().replaceAll("_"," "))){
+										 continue;
+									 }
 
 									StringBuilder linkText = new StringBuilder(htmlLink.getLinkText().trim());
 									// linkText = refactor(linkText);

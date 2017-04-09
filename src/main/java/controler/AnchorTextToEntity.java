@@ -14,6 +14,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
 
+import model.AnchorText;
 import model.Dictionary;
 import model.Entity;
 import util.HTMLLinkExtractor;
@@ -21,10 +22,12 @@ import util.HTMLLinkExtractor.HtmlLink;
 
 public class AnchorTextToEntity {
 
-	private static final int NUMBER_OF_THREADS = 45;
+	@SuppressWarnings("unused")
 	private static final Logger LOG = Logger.getLogger(AnchorTextToEntity.class.getCanonicalName());
 	private static final Dictionary DICTIONARY = new Dictionary();
-	private static final String WIKI_FILES_FOLDER = "data";
+	//private static final String WIKI_FILES_FOLDER = "../../data";
+	private static final String WIKI_FILES_FOLDER = "C:/Users/Farshad/Desktop/WikiPediaEntityDictionary/build/install/data";
+	private static final int NUMBER_OF_THREADS = 1;
 	
 	private static Map<String, Entity> entityMap;
 	private static final ExecutorService executor = Executors.newFixedThreadPool(NUMBER_OF_THREADS);
@@ -99,7 +102,7 @@ public class AnchorTextToEntity {
 									// linkTextRefactored =
 									// refactor(linkTextRefactored);
 									
-									DICTIONARY.merge(linkText.toString(), entity);
+									DICTIONARY.merge(new AnchorText(linkText.toString()), entity);
 									// DICTIONARY.merge(linkTextRefactored.toString(),set,
 									// biFunction);
 								}
@@ -109,12 +112,10 @@ public class AnchorTextToEntity {
 					}
 					System.out.println("Folder " + pathToSubFolder + " has been processed.");
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
 		};
-
 		return r;
 	}
 

@@ -5,7 +5,7 @@ public class MapEntity {
 	/**
 	 * how many times this entity has eben seen
 	 */
-	private long frequency = 0;
+	private long frequency = 1;
 
 	public MapEntity(Entity entity) {
 		this.entity = entity;

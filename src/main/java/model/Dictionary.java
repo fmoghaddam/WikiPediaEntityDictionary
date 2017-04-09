@@ -13,39 +13,60 @@ import org.apache.log4j.Logger;
 public class Dictionary {
 
 	private static final Logger LOG = Logger.getLogger(Dictionary.class.getCanonicalName());
-	private final ConcurrentHashMap<String, Set<MapEntity>> dic = new ConcurrentHashMap<>();
-	private static final BiFunction<Set<MapEntity>, Set<MapEntity>, Set<MapEntity>> biFunction = (beforeSet, entity) -> {
-		try{
-			Stream<MapEntity> filter = beforeSet.stream().filter(p -> p.getEntity().getUrl().equals(entity.stream().findFirst().get().getEntity().getUrl()));
-			if(filter.count()!=0){
-				Optional<MapEntity> findFirst = beforeSet.stream().filter(p -> p.getEntity().getUrl().equals(entity.stream().findFirst().get().getEntity().getUrl())).findFirst();
+	private final ConcurrentHashMap<AnchorText, Set<MapEntity>> dic = new ConcurrentHashMap<>();
+	private static final BiFunction<Set<MapEntity>, Set<MapEntity>, Set<MapEntity>> biFunction = (oldSet,
+			entity) -> {
+		try {
+			final Entity newEntity = entity.stream().findFirst().get().getEntity();
+			Stream<MapEntity> filter = oldSet.stream()
+					.filter(p -> p.getEntity().getUrl().equals(newEntity.getUrl()));
+			if (filter.count() != 0) {
+				Optional<MapEntity> findFirst = oldSet.stream().filter(
+						p -> p.getEntity().getUrl().equals(newEntity.getUrl()))
+						.findFirst();
 				findFirst.get().increment();
+			}else{
+				oldSet.add(new MapEntity(newEntity));
 			}
-		}catch(Exception exception){
+//			Stream<MapEntity> filter = oldSet.stream()
+//					.filter(p -> p.getEntity().getUrl().equals(newEntity));
+//			if (filter.count() != 0) {
+//				Optional<MapEntity> findFirst = oldSet.stream().filter(
+//						p -> p.getEntity().getUrl().equals(newEntity))
+//						.findFirst();
+//				findFirst.get().increment();
+//			} else {
+//				oldSet.add(entity.stream().findFirst().get());
+//			}
+		} catch (Exception exception) {
 			LOG.error(exception);
-			System.err.println(entity);
-			System.err.println(beforeSet);
 		}
-		return beforeSet;
+		return oldSet;
+		
 	};
 
-	public void merge(final String key, final Entity value) {
-		if (key == null || value == null) {
+	public void merge(final AnchorText anchorText, final Entity value) {
+		if (anchorText == null || value == null) {
 			throw new IllegalArgumentException();
 		}
 		final Set<MapEntity> set = new HashSet<>();
-		final MapEntity mapEntity = new MapEntity(value);
-		mapEntity.increment();
+		final MapEntity mapEntity = new MapEntity(value);	
 		set.add(mapEntity);
-		dic.merge(key, set, biFunction);
+		dic.merge(anchorText, set, biFunction);
+		dic.keySet().stream().filter(p -> p.equals(anchorText)).findFirst().get().increment();
+
 	}
 
 	public void printResult() {
-		for (final Entry<String, Set<MapEntity>> entry : dic.entrySet()) {
-			for(MapEntity mapEntity: entry.getValue()){
-				LOG.info(entry.getKey() + " ; " + mapEntity.getEntity().getEntityName() + " ; "+ mapEntity.getFrequency());
+		for (final Entry<AnchorText, Set<MapEntity>> entry : dic.entrySet()) {
+			StringBuilder result = new StringBuilder();
+			result.append(entry.getKey().getAnchorText()).append(";").append(entry.getKey().getFrequency()).append(";");
+			for (MapEntity mapEntity : entry.getValue()) {
+				result.append(mapEntity.getEntity().getEntityName()).append(";").append(mapEntity.getFrequency()).append(";");
 			}
+			LOG.info(result.toString());
 		}
+		
 	}
 
 	@Override

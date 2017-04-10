@@ -38,7 +38,7 @@ public class MapEntity {
 		if (obj == null)
 			return false;
 		MapEntity other = (MapEntity) obj;
-		if (entity.getUrl().equals(other.getEntity().getUrl())) {
+		if (entity.getUri().equals(other.getEntity().getUri())) {
 			return true;
 		}else{
 			return false;

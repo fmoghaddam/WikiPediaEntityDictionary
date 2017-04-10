@@ -10,6 +10,8 @@ import java.util.stream.Stream;
 
 import org.apache.log4j.Logger;
 
+import util.URLUTF8Encoder;
+
 public class Dictionary {
 
 	private static final Logger LOG = Logger.getLogger(Dictionary.class.getCanonicalName());
@@ -19,10 +21,10 @@ public class Dictionary {
 		try {
 			final Entity newEntity = entity.stream().findFirst().get().getEntity();
 			Stream<MapEntity> filter = oldSet.stream()
-					.filter(p -> p.getEntity().getUrl().equals(newEntity.getUrl()));
+					.filter(p -> p.getEntity().getUri().equals(newEntity.getUri()));
 			if (filter.count() != 0) {
 				Optional<MapEntity> findFirst = oldSet.stream().filter(
-						p -> p.getEntity().getUrl().equals(newEntity.getUrl()))
+						p -> p.getEntity().getUri().equals(newEntity.getUri()))
 						.findFirst();
 				findFirst.get().increment();
 			}else{
@@ -68,9 +70,25 @@ public class Dictionary {
 		}
 		
 	}
+	
+	public void printResultLineByLine() {
+		for (final Entry<AnchorText, Set<MapEntity>> entry : dic.entrySet()) {			
+			for (MapEntity mapEntity : entry.getValue()) {
+				StringBuilder result = new StringBuilder();
+				result.append(entry.getKey().getAnchorText()).append(";").append(entry.getKey().getFrequency()).append(";");
+				result.append(URLUTF8Encoder.unescape(mapEntity.getEntity().getUri())).append(";").append(mapEntity.getFrequency());
+				LOG.info(result.toString());
+			}
+		}
+		
+	}
 
 	@Override
 	public String toString() {
 		return "Dictionary [dic=" + dic + "]";
+	}
+
+	public int size() {
+		return dic.size();
 	}
 }

@@ -24,11 +24,15 @@ public class AnchorTextToEntityGeneral {
 	@SuppressWarnings("unused")
 	private static final Logger LOG = Logger.getLogger(AnchorTextToEntityGeneral.class.getCanonicalName());
 	private static final Dictionary DICTIONARY = new Dictionary();
-	private static final String WIKI_FILES_FOLDER = "C:/Users/Farshad/Desktop/WikiPediaEntityDictionary/build/install/data";
-	private static final int NUMBER_OF_THREADS = 1;
-	private static final ExecutorService executor = Executors.newFixedThreadPool(NUMBER_OF_THREADS);
+	private static String WIKI_FILES_FOLDER = "data";
+	private static int NUMBER_OF_THREADS = 1;
+	private static ExecutorService executor;
 
 	public static void main(String[] args) {
+		NUMBER_OF_THREADS = Integer.parseInt(args[0]);
+		WIKI_FILES_FOLDER = args[1];
+		executor = Executors.newFixedThreadPool(NUMBER_OF_THREADS);
+		
 		checkWikiPages();
 	}
 
@@ -42,7 +46,7 @@ public class AnchorTextToEntityGeneral {
 			}
 			executor.shutdown();
 			executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
-			DICTIONARY.printResult();
+			DICTIONARY.printResultLineByLine();
 		} catch (final Exception exception) {
 			exception.printStackTrace();
 		}

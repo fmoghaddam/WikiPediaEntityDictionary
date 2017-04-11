@@ -20,7 +20,7 @@ public class Entity {
 		this.entityName = "";
 		this.categoryFolder = "";
 	}
-	
+
 	public String getName() {
 		return name;
 	}
@@ -36,7 +36,7 @@ public class Entity {
 	public String getCategoryFolder() {
 		return categoryFolder;
 	}
-	
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;

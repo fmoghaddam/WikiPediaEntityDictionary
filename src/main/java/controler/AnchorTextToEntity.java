@@ -25,19 +25,19 @@ public class AnchorTextToEntity {
 	@SuppressWarnings("unused")
 	private static final Logger LOG = Logger.getLogger(AnchorTextToEntity.class.getCanonicalName());
 	private static final Dictionary DICTIONARY = new Dictionary();
-	//private static final String WIKI_FILES_FOLDER = "../../data";
-	private static final String WIKI_FILES_FOLDER = "C:/Users/Farshad/Desktop/WikiPediaEntityDictionary/build/install/data";
-	private static final int NUMBER_OF_THREADS = 1;
-	
+	private static String WIKI_FILES_FOLDER = "data";
+	private static int NUMBER_OF_THREADS = 1;
+
 	private static Map<String, Entity> entityMap;
-	private static final ExecutorService executor = Executors.newFixedThreadPool(NUMBER_OF_THREADS);
+	private static ExecutorService executor;
 
 	public static void main(String[] args) {
+
+		NUMBER_OF_THREADS = Integer.parseInt(args[0]);
+		WIKI_FILES_FOLDER = args[1];
+		executor = Executors.newFixedThreadPool(NUMBER_OF_THREADS);
+
 		entityMap = EntityFileLoader.loadData();
-		entityMap.values().stream().forEach(p -> {
-			System.err.println(p.getName());
-		});
-		//System.err.println(entityMap.get("France"));
 		checkWikiPages(entityMap);
 	}
 
@@ -51,7 +51,7 @@ public class AnchorTextToEntity {
 			}
 			executor.shutdown();
 			executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
-			DICTIONARY.printResult();
+			DICTIONARY.printToXLS();
 		} catch (final Exception exception) {
 			exception.printStackTrace();
 		}
@@ -77,38 +77,43 @@ public class AnchorTextToEntity {
 								final Entity entity = entityMap.get(htmlLink.getLink());
 								if (entity != null) {
 									// Remove exact names									
-									 if(htmlLink.getLinkText().equalsIgnoreCase(entity.getName()) 
-										 || htmlLink.getLinkText().equalsIgnoreCase(entity.getEntityName()) 
-										 || htmlLink.getLinkText().equalsIgnoreCase(entity.getEntityName().replaceAll("_"," "))){
-										 continue;
-									 }
+									if(htmlLink.getLinkText().equalsIgnoreCase(entity.getName()) 
+											|| htmlLink.getLinkText().equalsIgnoreCase(entity.getEntityName()) 
+											|| htmlLink.getLinkText().equalsIgnoreCase(entity.getEntityName().replaceAll("_"," "))){
+										continue;
+									}
 
 									StringBuilder linkText = new StringBuilder(htmlLink.getLinkText().trim());
-									// linkText = refactor(linkText);
+									 //linkText = refactor(linkText);
 
-									// Remove any word which exist in the entity
-									// name
-									// String[] split =
-									// linkText.toString().split(" ");
-									// StringBuilder linkTextRefactored = new
-									// StringBuilder();
-									// for(final String word: split){
-									// if(!entity.getName().contains(word)){
-									// linkTextRefactored.append(word).append("
-									// ");
-									// }
-									// }
-									// if(linkTextRefactored.toString().isEmpty()
-									// || linkTextRefactored.toString() == ""){
-									// continue;
-									// }
+									// Remove any word which exist in the entity name
+//									 String[] split = linkText.toString().split(" ");
+//									 StringBuilder linkTextRefactored = new StringBuilder();
+//									 for(final String word: split){
+//										 if(!entity.getCategoryFolder().contains("WorldCupWinner")){
+//											 if(entity.getEntityName().contains(word)){
+//												 continue;
+//											 }
+//										 }
+//										 if(entity.getName().contains(word)){
+//											 continue;
+//										 }
+//										 //if(!entity.getName().contains(word)){
+//										 else{
+//											 linkTextRefactored.append(word).append(" ");
+//										 }
+//									 }
+//									 if(linkTextRefactored.toString().isEmpty() || linkTextRefactored.toString() == ""){
+//										 continue;
+//									 }
 
 									// linkTextRefactored = linkText;
 
 									// linkTextRefactored =
 									// refactor(linkTextRefactored);
-									
+
 									DICTIONARY.merge(new AnchorText(linkText.toString()), entity);
+//									DICTIONARY.merge(new AnchorText(linkTextRefactored.toString()), entity);
 									// DICTIONARY.merge(linkTextRefactored.toString(),set,
 									// biFunction);
 								}
@@ -165,5 +170,5 @@ public class AnchorTextToEntity {
 		return result;
 	}
 
-	
+
 }

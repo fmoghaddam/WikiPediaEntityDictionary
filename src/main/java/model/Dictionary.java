@@ -56,7 +56,7 @@ public class Dictionary {
 		for (final Entry<AnchorText, Set<MapEntity>> entry : dic.entrySet()) {
 			StringBuilder result = new StringBuilder();
 			result.append(entry.getKey().getAnchorText()).append(";").append(entry.getKey().getFrequency()).append(";");
-			result.append("size").append(";").append(entry.getValue().size()).append(";");
+			result.append(entry.getValue().size()).append(";");
 			for (MapEntity mapEntity : entry.getValue()) {
 				result.append(mapEntity.getEntity().getEntityName()).append(";").append(mapEntity.getFrequency())
 				.append(";");

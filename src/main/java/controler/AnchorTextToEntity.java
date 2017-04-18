@@ -53,6 +53,7 @@ public class AnchorTextToEntity {
 			executor.shutdown();
 			executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
 			DICTIONARY.printResult();
+			DICTIONARY.printToXLS();		
 		} catch (final Exception exception) {
 			exception.printStackTrace();
 		}

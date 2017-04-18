@@ -32,7 +32,7 @@ public class AnchorTextToEntityGeneral {
 		NUMBER_OF_THREADS = Integer.parseInt(args[0]);
 		WIKI_FILES_FOLDER = args[1];
 		executor = Executors.newFixedThreadPool(NUMBER_OF_THREADS);
-		
+
 		checkWikiPages();
 	}
 
@@ -70,45 +70,8 @@ public class AnchorTextToEntityGeneral {
 							for (Iterator<?> iterator = links.iterator(); iterator.hasNext();) {
 								final HtmlLink htmlLink = (HtmlLink) iterator.next();
 								final Entity entity = new Entity(htmlLink.getLink());
-								// Remove exact names									
-								//if(htmlLink.getLinkText().equalsIgnoreCase(entity.getName()) 
-								//		|| htmlLink.getLinkText().equalsIgnoreCase(entity.getEntityName()) 
-								//		|| htmlLink.getLinkText().equalsIgnoreCase(entity.getEntityName().replaceAll("_"," "))){
-								//	continue;
-								//}
-
 								StringBuilder linkText = new StringBuilder(htmlLink.getLinkText().trim());
-								// linkText = refactor(linkText);
-
-								// Remove any word which exist in the entity
-								// name
-								// String[] split =
-								// linkText.toString().split(" ");
-								// StringBuilder linkTextRefactored = new
-								// StringBuilder();
-								// for(final String word: split){
-								// if(!entity.getName().contains(word)){
-								// linkTextRefactored.append(word).append("
-								// ");
-								// }
-								// }
-								// if(linkTextRefactored.toString().isEmpty()
-								// || linkTextRefactored.toString() == ""){
-								// continue;
-								// }
-
-								// linkTextRefactored = linkText;
-
-								// linkTextRefactored =
-								// refactor(linkTextRefactored);
-
 								DICTIONARY.merge(new AnchorText(linkText.toString()), entity);
-//								if(DICTIONARY.size()==10000){
-//									DICTIONARY.printResultLineByLine();
-//									break;
-//								}
-								// DICTIONARY.merge(linkTextRefactored.toString(),set,
-								// biFunction);
 							}
 						}
 						br.close();
@@ -121,46 +84,4 @@ public class AnchorTextToEntityGeneral {
 		};
 		return r;
 	}
-
-	@SuppressWarnings("unused")
-	private static StringBuilder refactor(StringBuilder linkText) {
-		StringBuilder result = new StringBuilder(linkText.toString().trim());
-		int index = result.lastIndexOf("'");
-		while (index == result.length() - 2 && index >= 0) {
-			result = new StringBuilder(result.substring(0, index).trim());
-			index = result.lastIndexOf("'");
-			// if(index == linkText.length()-2 && index>=0){
-			// linkText = new StringBuilder(linkText.substring(0, index));
-		}
-		index = result.lastIndexOf("'");
-		while (index == result.length() - 1 && index >= 0) {
-			result = new StringBuilder(result.substring(0, index).trim());
-			index = result.lastIndexOf("'");
-			// if(index == linkText.length()-1 && index>=0){
-			// linkText = new StringBuilder(linkText.substring(0, index));
-		}
-		index = result.lastIndexOf("’");
-		while (index == result.length() - 2 && index >= 0) {
-			result = new StringBuilder(result.substring(0, index).trim());
-			index = result.lastIndexOf("’");
-			// if(index == linkText.length()-2 && index>=0){
-			// linkText = new StringBuilder(linkText.substring(0, index));
-		}
-		index = result.lastIndexOf("’");
-		while (index == result.length() - 1 && index >= 0) {
-			// if(index == linkText.length()-1 && index>=0){
-			result = new StringBuilder(result.substring(0, index).trim());
-			index = result.lastIndexOf("’");
-		}
-		index = result.lastIndexOf(",");
-		while (index == result.length() - 1 && index >= 0) {
-			result = new StringBuilder(result.substring(0, index).trim());
-			index = result.lastIndexOf(",");
-			// if(index == linkText.length()-1 && index>=0){
-			// linkText = new StringBuilder(linkText.substring(0, index));
-		}
-		return result;
-	}
-
-
 }

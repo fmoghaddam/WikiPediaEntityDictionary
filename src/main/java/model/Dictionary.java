@@ -3,13 +3,9 @@ package model;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.BiFunction;
-import java.util.stream.Stream;
 
 import org.apache.log4j.Logger;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -18,122 +14,107 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.CellRangeAddress;
+
 public class Dictionary {
 
 	private static final Logger LOG = Logger.getLogger(Dictionary.class.getCanonicalName());
-	private final ConcurrentHashMap<AnchorText, Set<MapEntity>> dic = new ConcurrentHashMap<>();
-	private static final BiFunction<Set<MapEntity>, Set<MapEntity>, Set<MapEntity>> biFunction = (oldSet, entity) -> {
-		try {
-			final Entity newEntity = entity.stream().findFirst().get().getEntity();
-			Stream<MapEntity> filter = oldSet.stream().filter(p -> p.getEntity().getUri().equals(newEntity.getUri()));
-			if (filter.count() != 0) {
-				Optional<MapEntity> findFirst = oldSet.stream()
-						.filter(p -> p.getEntity().getUri().equals(newEntity.getUri())).findFirst();
-				findFirst.get().increment();
-			} else {
-				oldSet.add(new MapEntity(newEntity));
-			}
-		} catch (Exception exception) {
-			LOG.error(exception);
-		}
-		return oldSet;
+	private final ConcurrentHashMap<AnchorText, Map<String, MapEntity>> dic = new ConcurrentHashMap<>();
+	private final ConcurrentHashMap<AnchorText, Long> dicKeyFrequency = new ConcurrentHashMap<>();
 
-	};
-
-	public void merge(final AnchorText anchorText, final Entity value) {
-		if (anchorText == null || value == null) {
+	public void merge(final AnchorText anchorText, final Entity entity) {
+		if (anchorText == null || entity == null) {
 			throw new IllegalArgumentException();
 		}
-		final Set<MapEntity> set = new HashSet<>();
-		final MapEntity mapEntity = new MapEntity(value);
-		set.add(mapEntity);
-		dic.merge(anchorText, set, biFunction);
-		dic.keySet().stream().filter(p -> p.equals(anchorText)).findFirst().get().increment();
+
+		final MapEntity mapEntity = new MapEntity(entity);
+
+		Map<String, MapEntity> dicElement = dic.get(anchorText);
+		if (dicElement == null) {
+			final Map<String, MapEntity> map = new ConcurrentHashMap<>();
+			map.put(mapEntity.getEntity().getUri(), mapEntity);
+			dic.put(anchorText, map);
+			dicKeyFrequency.put(anchorText, anchorText.getFrequency());
+		} else {
+			MapEntity mapElement = dicElement.get(entity.getUri());
+			if (mapElement == null) {
+				dicElement.put(entity.getUri(), mapEntity);
+			} else {
+				mapElement.increment();
+			}
+		}
+
+		dicKeyFrequency.put(anchorText,
+				dicKeyFrequency.containsKey(anchorText) ? (dicKeyFrequency.get(anchorText).longValue() + 1) : 1);
 
 	}
 
 	public void printResult() {
-		for (final Entry<AnchorText, Set<MapEntity>> entry : dic.entrySet()) {
+		for (final Entry<AnchorText, Map<String, MapEntity>> entry : dic.entrySet()) {
 			StringBuilder result = new StringBuilder();
-			result.append(entry.getKey().getAnchorText()).append(";").append(entry.getKey().getFrequency()).append(";");
+			result.append(entry.getKey().getAnchorText()).append(";").append(dicKeyFrequency.get(entry.getKey()))
+					.append(";");
 			result.append(entry.getValue().size()).append(";");
-			for (MapEntity mapEntity : entry.getValue()) {
+			for (MapEntity mapEntity : entry.getValue().values()) {
 				result.append(mapEntity.getEntity().getEntityName()).append(";").append(mapEntity.getFrequency())
-				.append(";");
+						.append(";");
 			}
 			LOG.info(result.toString());
 		}
-
 	}
 
-	public void printToXLS(){
+	public void printToXLS() {
 		final Workbook wb = new HSSFWorkbook();
 		final Sheet sheet = wb.createSheet("new sheet");
 		int startRow = 0;
 		int endRow = 0;
 		int columnNumber = 0;
 		int rowNumber = 0;
-		for (final Entry<AnchorText, Set<MapEntity>> entry : dic.entrySet()) {			
+		for (final Entry<AnchorText, Map<String, MapEntity>> entry : dic.entrySet()) {
 			final Row row = sheet.createRow((short) rowNumber);
 			Cell cell = row.createCell((short) columnNumber++);
 			cell.setCellValue(entry.getKey().getAnchorText());
 
 			cell = row.createCell((short) columnNumber++);
-			cell.setCellValue(entry.getKey().getFrequency());
+			cell.setCellValue(dicKeyFrequency.get(entry.getKey()));
 
 			cell = row.createCell((short) columnNumber++);
 			cell.setCellValue(entry.getValue().size());
 
-			int innerRowNumer = new Integer(rowNumber).intValue()+1;
-			startRow = innerRowNumer-1;
+			int innerRowNumer = new Integer(rowNumber).intValue() + 1;
+			startRow = innerRowNumer - 1;
 			endRow = startRow;
 
 			boolean firstTime = true;
-			for (final MapEntity mapEntity : entry.getValue()) {
-				if(firstTime){
-					row.createCell((short) columnNumber).setCellValue(mapEntity.getEntity().getEntityName());
-					row.createCell((short) columnNumber+1).setCellValue(mapEntity.getFrequency());
-					row.createCell((short) columnNumber+2).setCellValue(mapEntity.getEntity().getCategoryFolder());
+			for (final Entry<String, MapEntity> mapEntity : entry.getValue().entrySet()) {
+				if (firstTime) {
+					row.createCell((short) columnNumber).setCellValue(mapEntity.getValue().getEntity().getEntityName());
+					row.createCell((short) columnNumber + 1).setCellValue(mapEntity.getValue().getFrequency());
+					row.createCell((short) columnNumber + 2)
+							.setCellValue(mapEntity.getValue().getEntity().getCategoryFolder());
 					firstTime = false;
-				}else{
+				} else {
 					int innerColumnNumber = new Integer(columnNumber).intValue();
 					final Row innerRow = sheet.createRow((short) innerRowNumer++);
 					cell = innerRow.createCell((short) innerColumnNumber++);
-					cell.setCellValue(mapEntity.getEntity().getEntityName());
+					cell.setCellValue(mapEntity.getValue().getEntity().getEntityName());
 
 					cell = innerRow.createCell((short) innerColumnNumber++);
-					cell.setCellValue(mapEntity.getFrequency());
+					cell.setCellValue(mapEntity.getValue().getFrequency());
 
 					cell = innerRow.createCell((short) innerColumnNumber++);
-					cell.setCellValue(mapEntity.getEntity().getCategoryFolder());
+					cell.setCellValue(mapEntity.getValue().getEntity().getCategoryFolder());
 					endRow++;
 				}
-			}	
-			if(startRow<endRow){
-				sheet.addMergedRegion(new CellRangeAddress(
-						startRow, //first row (0-based)
-						endRow, //last row  (0-based)
-						0, //first column (0-based)
-						0  //last column  (0-based)
-						));
-				sheet.addMergedRegion(new CellRangeAddress(
-						startRow, //first row (0-based)
-						endRow, //last row  (0-based)
-						1, //first column (0-based)
-						1  //last column  (0-based)
-						));
-				sheet.addMergedRegion(new CellRangeAddress(
-						startRow, //first row (0-based)
-						endRow, //last row  (0-based)
-						2, //first column (0-based)
-						2  //last column  (0-based)
-						));
 			}
-			rowNumber=endRow+1;
-			startRow=endRow+1;
-			columnNumber=0;
+			if (startRow < endRow) {
+				sheet.addMergedRegion(new CellRangeAddress(startRow, endRow, 0, 0));
+				sheet.addMergedRegion(new CellRangeAddress(startRow, endRow, 1, 1));
+				sheet.addMergedRegion(new CellRangeAddress(startRow, endRow, 2, 2));
+			}
+			rowNumber = endRow + 1;
+			startRow = endRow + 1;
+			columnNumber = 0;
 		}
-
 
 		// Write the output to a file
 		final FileOutputStream fileOut;
@@ -143,35 +124,47 @@ public class Dictionary {
 			fileOut.close();
 			wb.close();
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
 	}
 
-	public void printResultLineByLine() {
-		for (final Entry<AnchorText, Set<MapEntity>> entry : dic.entrySet()) {
+	public void printResultLineByLineByMerge() {
+		for (final Entry<AnchorText, Map<String, MapEntity>> entry : dic.entrySet()) {
 			boolean firstline = true;
-			StringBuilder result = new StringBuilder();			
-			for (MapEntity mapEntity : entry.getValue()) {
-				if(firstline){
-					result.append(entry.getKey().getAnchorText()).append(";").append(entry.getKey().getFrequency()).append(";").append(entry.getValue().size()).append(";");
-					firstline=false;
-				}else{
+			StringBuilder result = new StringBuilder();
+			for (Entry<String, MapEntity> mapEntity : entry.getValue().entrySet()) {
+				if (firstline) {
+					result.append(entry.getKey().getAnchorText()).append(";")
+							.append(dicKeyFrequency.get(entry.getKey())).append(";").append(entry.getValue().size())
+							.append(";");
+					firstline = false;
+				} else {
 					result.append(";;;");
 				}
 				// result.append(URLUTF8Encoder.unescape(mapEntity.getEntity().getUri())).append(";").append(mapEntity.getFrequency());
-				result.append(mapEntity.getEntity().getEntityName()).append(";").append(mapEntity.getFrequency())
-				.append(";");
-				result.append(mapEntity.getEntity().getCategoryFolder());
+				result.append(mapEntity.getValue().getEntity().getEntityName()).append(";")
+						.append(mapEntity.getValue().getFrequency()).append(";");
+				result.append(mapEntity.getValue().getEntity().getCategoryFolder());
 				LOG.info(result.toString());
-				result = new StringBuilder();	
+				result = new StringBuilder();
 			}
 		}
+	}
 
+	public void printResultLineByLine() {
+		for (final Entry<AnchorText, Map<String, MapEntity>> entry : dic.entrySet()) {
+			StringBuilder result = new StringBuilder();
+			for (Entry<String, MapEntity> mapEntity : entry.getValue().entrySet()) {
+				result.append(entry.getKey().getAnchorText()).append(";").append(dicKeyFrequency.get(entry.getKey()))
+						.append(";").append(entry.getValue().size()).append(";");
+				result.append(mapEntity.getValue().getEntity().getUri()).append(";")
+						.append(mapEntity.getValue().getFrequency()).append(";");
+				LOG.info(result.toString());
+				result = new StringBuilder();
+			}
+		}
 	}
 
 	@Override

@@ -52,8 +52,8 @@ public class AnchorTextToEntity {
 			}
 			executor.shutdown();
 			executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
-			//DICTIONARY.printResultWithoutEntitesWithClustringCoefficient();
-			DICTIONARY.printResult();
+			DICTIONARY.printResultWithoutEntitesWithClustringCoefficient();
+			//DICTIONARY.printResult();
 		} catch (final Exception exception) {
 			exception.printStackTrace();
 		}
@@ -102,11 +102,11 @@ public class AnchorTextToEntity {
 		StringBuilder linkTextRefactored = new StringBuilder();
 		for (final String word : split) {
 			if (entity.getEntityName().contains(word)) {
-				//linkTextRefactored.append(" XXX ");
+//				linkTextRefactored.append("X");
 				continue;
 			}
 			if (entity.getName().contains(word)) {
-				//linkTextRefactored.append(" XXX ");
+//				linkTextRefactored.append("X");
 				continue;
 			} else {
 				linkTextRefactored.append(word).append(" ");
@@ -115,6 +115,13 @@ public class AnchorTextToEntity {
 		result = linkTextRefactored.toString();
 		result = result.replaceAll("\\s+", " ");
 		result = result.trim();
+				
+//		result = result.replaceAll("XXX", "X");
+//		result = result.replaceAll("XX", "X");
+//		
+//		if(result.contains("X")){
+//			result = result.replaceAll("X", " X ");
+//		}
 		return result;
 	}
 
@@ -123,10 +130,6 @@ public class AnchorTextToEntity {
 		result = result.replaceAll(entity.getName(), "");
 		result = result.replaceAll(entity.getEntityName(), "");
 		result = result.replaceAll(entity.getEntityName().replaceAll("_", " "), "");
-		
-//		result = result.replaceAll(entity.getName(), " XXX ");
-//		result = result.replaceAll(entity.getEntityName(), " XXX ");
-//		result = result.replaceAll(entity.getEntityName().replaceAll("_", " "), " XXX ");
 		return result;
 	}
 
@@ -147,8 +150,8 @@ public class AnchorTextToEntity {
 	public static String refactor(String anchorText, Entity entity) {
 		String linkText = removeS(anchorText.trim());
 		linkText = removeSpeicalCharacters(linkText.trim());
-		//linkText = removeFullNameAndEntityName(linkText.trim(), entity);
-		//linkText = removeFullNameAndEntityNameWordByWord(linkText.trim(), entity);
+		linkText = removeFullNameAndEntityName(linkText.trim(), entity);
+		linkText = removeFullNameAndEntityNameWordByWord(linkText.trim(), entity);
 		linkText = removeStopWords(linkText.trim());
 		linkText = removeDotsIfTheSizeOfTextIs2(linkText.trim());
 		linkText = removeNoneAlphabeticSingleChar(linkText.trim());

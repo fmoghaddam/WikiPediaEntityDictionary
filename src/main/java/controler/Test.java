@@ -16,6 +16,9 @@ public class Test {
 		String b = " 1 ";
 		System.err.println(AnchorTextToEntity.refactor(b, new Entity("farshad","  ","FARSHAD","TEST")));
 		
+		String c = "XXXX";
+		System.err.println(AnchorTextToEntity.refactor(c, new Entity("farshad","  ","FARSHAD","TEST")));
+		
 	}
 
 }

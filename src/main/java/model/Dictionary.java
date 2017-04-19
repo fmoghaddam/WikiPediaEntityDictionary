@@ -3,9 +3,11 @@ package model;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import org.apache.log4j.Logger;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -15,11 +17,15 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.CellRangeAddress;
 
+import util.MapUtil;
+import util.StatisticalFunctions;
+
 public class Dictionary {
 
 	private static final Logger LOG = Logger.getLogger(Dictionary.class.getCanonicalName());
-	private final ConcurrentHashMap<AnchorText, Map<String, MapEntity>> dic = new ConcurrentHashMap<>();
-	private final ConcurrentHashMap<AnchorText, Long> dicKeyFrequency = new ConcurrentHashMap<>();
+	private final ConcurrentHashMap<AnchorText, Map<String, MapEntity>> dictionary = new ConcurrentHashMap<>();
+	private final ConcurrentHashMap<AnchorText, Long> dictionaryKeyFrequency = new ConcurrentHashMap<>();
+	private ConcurrentHashMap<AnchorText, Map<String, Double>> dictionaryValueClustringCoefficientMap = new ConcurrentHashMap<>();
 
 	public void merge(final AnchorText anchorText, final Entity entity) {
 		if (anchorText == null || entity == null) {
@@ -28,12 +34,12 @@ public class Dictionary {
 
 		final MapEntity mapEntity = new MapEntity(entity);
 
-		Map<String, MapEntity> dicElement = dic.get(anchorText);
+		Map<String, MapEntity> dicElement = dictionary.get(anchorText);
 		if (dicElement == null) {
 			final Map<String, MapEntity> map = new ConcurrentHashMap<>();
 			map.put(mapEntity.getEntity().getUri(), mapEntity);
-			dic.put(anchorText, map);
-			dicKeyFrequency.put(anchorText, anchorText.getFrequency());
+			dictionary.put(anchorText, map);
+			dictionaryKeyFrequency.put(anchorText, anchorText.getFrequency());
 		} else {
 			MapEntity mapElement = dicElement.get(entity.getUri());
 			if (mapElement == null) {
@@ -43,20 +49,42 @@ public class Dictionary {
 			}
 		}
 
-		dicKeyFrequency.put(anchorText,
-				dicKeyFrequency.containsKey(anchorText) ? (dicKeyFrequency.get(anchorText).longValue() + 1) : 1);
+		dictionaryKeyFrequency.put(anchorText, dictionaryKeyFrequency.containsKey(anchorText)
+				? (dictionaryKeyFrequency.get(anchorText).longValue() + 1) : 1);
 
 	}
 
 	public void printResult() {
-		for (final Entry<AnchorText, Map<String, MapEntity>> entry : dic.entrySet()) {
+		for (final Entry<AnchorText, Map<String, MapEntity>> entry : dictionary.entrySet()) {
 			StringBuilder result = new StringBuilder();
-			result.append(entry.getKey().getAnchorText()).append(";").append(dicKeyFrequency.get(entry.getKey()))
+			result.append(entry.getKey().getAnchorText()).append(";").append(dictionaryKeyFrequency.get(entry.getKey()))
 					.append(";");
 			result.append(entry.getValue().size()).append(";");
 			for (MapEntity mapEntity : entry.getValue().values()) {
 				result.append(mapEntity.getEntity().getEntityName()).append(";").append(mapEntity.getFrequency())
 						.append(";");
+			}
+			LOG.info(result.toString());
+		}
+	}
+
+	public void printResultWithoutEntitesWithClustringCoefficient() {
+		dictionaryValueClustringCoefficientMap = calculateClustringCoefficient();
+		LOG.info("entity;frequency;size;hueristic(size*frequency*clusting coefficient);cluster;frequency;cluster;frequency;cluster;frequency");
+		double heuristicValue = 0;
+		for (final Entry<AnchorText, Map<String, MapEntity>> entry : dictionary.entrySet()) {
+			StringBuilder result = new StringBuilder();
+			result.append(entry.getKey().getAnchorText()).append(";").append(dictionaryKeyFrequency.get(entry.getKey()))
+					.append(";");
+			final Map<String, Double> map = dictionaryValueClustringCoefficientMap.get(entry.getKey());
+			heuristicValue = dictionaryKeyFrequency.get(entry.getKey()) * StatisticalFunctions.sigmoid(map.values().stream().findFirst().get())
+					* entry.getValue().size();
+
+			result.append(entry.getValue().size()).append(";").append(heuristicValue).append(";");
+
+			for (Entry<String, Double> coefficientEntry : map.entrySet()) {
+				result.append(coefficientEntry.getKey()).append(";").append(coefficientEntry.getValue()).append(";");
+
 			}
 			LOG.info(result.toString());
 		}
@@ -69,13 +97,13 @@ public class Dictionary {
 		int endRow = 0;
 		int columnNumber = 0;
 		int rowNumber = 0;
-		for (final Entry<AnchorText, Map<String, MapEntity>> entry : dic.entrySet()) {
+		for (final Entry<AnchorText, Map<String, MapEntity>> entry : dictionary.entrySet()) {
 			final Row row = sheet.createRow((short) rowNumber);
 			Cell cell = row.createCell((short) columnNumber++);
 			cell.setCellValue(entry.getKey().getAnchorText());
 
 			cell = row.createCell((short) columnNumber++);
-			cell.setCellValue(dicKeyFrequency.get(entry.getKey()));
+			cell.setCellValue(dictionaryKeyFrequency.get(entry.getKey()));
 
 			cell = row.createCell((short) columnNumber++);
 			cell.setCellValue(entry.getValue().size());
@@ -119,7 +147,7 @@ public class Dictionary {
 		// Write the output to a file
 		final FileOutputStream fileOut;
 		try {
-			fileOut = new FileOutputStream("workbook.xls");
+			fileOut = new FileOutputStream("./log/workbook.xls");
 			wb.write(fileOut);
 			fileOut.close();
 			wb.close();
@@ -131,14 +159,14 @@ public class Dictionary {
 	}
 
 	public void printResultLineByLineByMerge() {
-		for (final Entry<AnchorText, Map<String, MapEntity>> entry : dic.entrySet()) {
+		for (final Entry<AnchorText, Map<String, MapEntity>> entry : dictionary.entrySet()) {
 			boolean firstline = true;
 			StringBuilder result = new StringBuilder();
 			for (Entry<String, MapEntity> mapEntity : entry.getValue().entrySet()) {
 				if (firstline) {
 					result.append(entry.getKey().getAnchorText()).append(";")
-							.append(dicKeyFrequency.get(entry.getKey())).append(";").append(entry.getValue().size())
-							.append(";");
+							.append(dictionaryKeyFrequency.get(entry.getKey())).append(";")
+							.append(entry.getValue().size()).append(";");
 					firstline = false;
 				} else {
 					result.append(";;;");
@@ -154,11 +182,12 @@ public class Dictionary {
 	}
 
 	public void printResultLineByLine() {
-		for (final Entry<AnchorText, Map<String, MapEntity>> entry : dic.entrySet()) {
+		for (final Entry<AnchorText, Map<String, MapEntity>> entry : dictionary.entrySet()) {
 			StringBuilder result = new StringBuilder();
 			for (Entry<String, MapEntity> mapEntity : entry.getValue().entrySet()) {
-				result.append(entry.getKey().getAnchorText()).append(";").append(dicKeyFrequency.get(entry.getKey()))
-						.append(";").append(entry.getValue().size()).append(";");
+				result.append(entry.getKey().getAnchorText()).append(";")
+						.append(dictionaryKeyFrequency.get(entry.getKey())).append(";").append(entry.getValue().size())
+						.append(";");
 				result.append(mapEntity.getValue().getEntity().getUri()).append(";")
 						.append(mapEntity.getValue().getFrequency()).append(";");
 				LOG.info(result.toString());
@@ -169,10 +198,38 @@ public class Dictionary {
 
 	@Override
 	public String toString() {
-		return "Dictionary [dic=" + dic + "]";
+		return "Dictionary [dic=" + dictionary + "]";
 	}
 
 	public int size() {
-		return dic.size();
+		return dictionary.size();
+	}
+
+	private ConcurrentHashMap<AnchorText, Map<String, Double>> calculateClustringCoefficient() {
+		final ConcurrentHashMap<AnchorText, Map<String, Double>> clustringCoefficientMap = new ConcurrentHashMap<>();
+		for (final Entry<AnchorText, Map<String, MapEntity>> entry : dictionary.entrySet()) {
+			final AnchorText anchorText = entry.getKey();
+			final Map<String, Double> coefficientsMap = calculateCoefficient(
+					entry.getValue().values().stream().map(p -> p.getEntity()).collect(Collectors.toList()));
+			clustringCoefficientMap.put(anchorText, coefficientsMap);
+		}
+		return clustringCoefficientMap;
+	}
+
+	private Map<String, Double> calculateCoefficient(List<Entity> entities) {
+		Map<String, Double> coefficientsMap = new ConcurrentHashMap<>();
+		final int size = entities.size();
+		for (Entity entity : entities) {
+			final String key = entity.getCategoryFolder();
+			final Double coefficient = coefficientsMap.get(key);
+			if (coefficient == null) {
+				coefficientsMap.put(key, 1.);
+			} else {
+				coefficientsMap.put(key, coefficient.doubleValue() + 1);
+			}
+		}
+		//Normalization section
+		// coefficientsMap = coefficientsMap.entrySet().stream().collect(Collectors.toMap(p->p.getKey(),p->p.getValue()/size));
+		return MapUtil.sortByValueDescending(coefficientsMap);
 	}
 }

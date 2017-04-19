@@ -1,13 +1,18 @@
+plugins {
+    id 'org.hidetake.ssh' version '2.8.0'
+}
+
 apply plugin: 'java'
 apply plugin: 'eclipse'
 apply plugin: 'application'
 
+
 repositories {
     jcenter()
 }
-mainClassName="controler.AnchorTextToEntityGeneral"
+//mainClassName="controler.AnchorTextToEntityGeneral"
 //mainClassName="controler.EntityToAnchorText"
-//mainClassName="controler.AnchorTextToEntity"
+mainClassName="controler.AnchorTextToEntity"
 
 
 applicationDefaultJvmArgs = ["-Xmx30g"]
@@ -22,4 +27,39 @@ dependencies
 
 applicationDistribution.from("entities") {
     into "bin/entities"
+}
+
+
+ssh.settings {
+    dryRun = project.hasProperty('dryRun')
+}
+
+remotes {
+    server {
+        host = '141.66.13.10'
+        user = 'farshad'
+        identity = file("${System.properties['user.home']}/.ssh/id_rsa")
+    }
+}
+
+task showPlatformVersion << {
+    println ssh.version
+    ssh.run {
+        session(remotes.server) {
+            execute 'uname -a'
+            execute 'cat /etc/*-release', ignoreError: true
+        }
+    }
+}
+
+task deploy(dependsOn: installDist) << {
+    ssh.run {
+        session(remotes.server) {
+         	execute 'rm -rf ./java/WikiPediaEntityDictionary'
+            put from: './build/install/WikiPediaEntityDictionary', into: './java/'
+            execute 'chmod +x ./java/WikiPediaEntityDictionary/bin/WikiPediaEntityDictionary'
+            execute 'cd ./java/WikiPediaEntityDictionary/bin && ./WikiPediaEntityDictionary 50 /home/farshad/java/data/'
+            get from: './java/WikiPediaEntityDictionary/bin/log', into: '.'
+        }
+    }
 }

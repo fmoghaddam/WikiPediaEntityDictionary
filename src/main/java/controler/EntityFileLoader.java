@@ -14,7 +14,8 @@ import util.URLUTF8Encoder;
 
 public class EntityFileLoader {
 	private static final Logger LOG = Logger.getLogger(EntityFileLoader.class.getCanonicalName());
-	private static final String ENTITY_FOLDER_NAME = "entities";
+	//private static final String ENTITY_FOLDER_NAME = "entities";
+	private static final String ENTITY_FOLDER_NAME = "wikidata";
 
 	public static Map<String, Entity> loadData() {
 		final Map<String, Entity> map = new LinkedHashMap<>();

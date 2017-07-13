@@ -12,7 +12,8 @@ repositories {
 }
 //mainClassName="controler.AnchorTextToEntityGeneral"
 //mainClassName="controler.EntityToAnchorText"
-mainClassName="controler.AnchorTextToEntity"
+//mainClassName="controler.AnchorTextToEntity"
+mainClassName="controler.AnchorTextToEntityWikidata"
 
 
 applicationDefaultJvmArgs = ["-Xmx30g"]
@@ -29,6 +30,10 @@ applicationDistribution.from("entities") {
     into "bin/entities"
 }
 
+applicationDistribution.from("wikidata") {
+    into "bin/wikidata"
+}
+
 
 ssh.settings {
     dryRun = project.hasProperty('dryRun')
@@ -36,7 +41,7 @@ ssh.settings {
 
 remotes {
     server {
-        host = '141.66.13.10'
+        host = '10.10.4.10'
         user = 'farshad'
         identity = file("${System.properties['user.home']}/.ssh/id_rsa")
     }

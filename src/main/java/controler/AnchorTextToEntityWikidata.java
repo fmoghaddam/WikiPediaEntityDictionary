@@ -17,6 +17,7 @@ import org.apache.log4j.Logger;
 import model.AnchorText;
 import model.Dictionary;
 import model.Entity;
+import util.CharactersUtils;
 import util.HTMLLinkExtractor;
 import util.HTMLLinkExtractor.HtmlLink;
 
@@ -69,14 +70,14 @@ public class AnchorTextToEntityWikidata {
 						BufferedReader br = new BufferedReader(new FileReader(pathToSubFolder + File.separator + file));
 						String line;
 						while ((line = br.readLine()) != null) {
-							line = line.toLowerCase();
+							//line = line.toLowerCase();
 							final HTMLLinkExtractor htmlLinkExtractor = new HTMLLinkExtractor();
 							final Vector<HtmlLink> links = htmlLinkExtractor.grabHTMLLinks(line);
 							for (Iterator<?> iterator = links.iterator(); iterator.hasNext();) {
 								final HtmlLink htmlLink = (HtmlLink) iterator.next();
 								final Entity entity = entityMap.get(htmlLink.getLink());
 								if (entity != null) {
-									final String linkText = htmlLink.getLinkText().trim();
+									final String linkText = refactor(htmlLink.getLinkText().trim());
 									if (linkText != null && !linkText.isEmpty()) {
 										DICTIONARY.merge(new AnchorText(linkText), entity);
 									}
@@ -92,5 +93,56 @@ public class AnchorTextToEntityWikidata {
 			}
 		};
 		return r;
+	}
+	
+	public static String refactor(String anchorText) {
+		String linkText = anchorText.trim();
+		linkText = convertUmlaut(linkText.trim());
+		linkText = removeSpeicalCharacters(linkText.trim());
+		linkText = removeDotsIfTheSizeOfTextIs2(linkText.trim());
+		linkText = removeNoneAlphabeticSingleChar(linkText.trim());
+		linkText = removeAlphabeticSingleChar(linkText.trim());
+		return linkText;
+	}
+	
+	private static String convertUmlaut(String text) {
+		final String[][] UMLAUT_REPLACEMENTS = { { new String("Ä"), "Ae" }, { new String("Ü"), "Ue" }, { new String("Ö"), "Oe" }, { new String("ä"), "ae" }, { new String("ü"), "ue" }, { new String("ö"), "oe" }, { new String("ß"), "ss" } };
+		String result = text;
+		for (int i = 0; i < UMLAUT_REPLACEMENTS.length; i++) {
+			result = result.replace(UMLAUT_REPLACEMENTS[i][0], UMLAUT_REPLACEMENTS[i][1]);
+		}
+		return result;
+	}
+
+	protected static String removeSpeicalCharacters(String anchorText) {
+		String result = new String(anchorText);
+		for (String character : CharactersUtils.CHARS) {
+			result = result.replaceAll(character, "");
+		}
+		return result;
+	}
+	
+	protected static String removeDotsIfTheSizeOfTextIs2(String anchorText) {
+		String result = new String(anchorText);
+		if (anchorText.length() <= 2) {
+			result = result.replaceAll(".", "");
+		}
+		return result;
+	}
+	
+	protected static String removeNoneAlphabeticSingleChar(String anchorText) {
+		if (anchorText.length() == 1) {
+			if (!Character.isLetter(anchorText.charAt(0))) {
+				return "";
+			}
+		}
+		return anchorText;
+	}
+	
+	protected static String removeAlphabeticSingleChar(String anchorText) {
+		if (anchorText.length() == 1) {
+			return "";
+		}
+		return anchorText;
 	}
 }

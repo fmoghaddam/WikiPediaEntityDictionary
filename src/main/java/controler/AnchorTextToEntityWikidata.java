@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map;
@@ -27,15 +28,15 @@ public class AnchorTextToEntityWikidata {
 	private static final Logger LOG = Logger.getLogger(AnchorTextToEntityWikidata.class.getCanonicalName());
 	private static final Dictionary DICTIONARY = new Dictionary();
 	private static String WIKI_FILES_FOLDER = "data";
-	private static int NUMBER_OF_THREADS = 50;
+	private static int NUMBER_OF_THREADS = 4;
 
 	private static Map<String, Entity> entityMap;
 	private static ExecutorService executor;
 
 	public static void main(String[] args) {
 
-		NUMBER_OF_THREADS = Integer.parseInt(args[0]);
-		WIKI_FILES_FOLDER = args[1];
+		//NUMBER_OF_THREADS = Integer.parseInt(args[0]);
+		//WIKI_FILES_FOLDER = args[1];
 		executor = Executors.newFixedThreadPool(NUMBER_OF_THREADS);
 
 		entityMap = EntityFileLoader.loadData();
@@ -52,7 +53,7 @@ public class AnchorTextToEntityWikidata {
 			}
 			executor.shutdown();
 			executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
-			DICTIONARY.printResultLineByLineByMerge();
+			DICTIONARY.printResultLineByLineByMerge(true);
 		} catch (final Exception exception) {
 			exception.printStackTrace();
 		}
@@ -97,12 +98,29 @@ public class AnchorTextToEntityWikidata {
 	
 	public static String refactor(String anchorText) {
 		String linkText = anchorText.trim();
+		linkText = removeS(anchorText.trim());
 		linkText = convertUmlaut(linkText.trim());
 		linkText = removeSpeicalCharacters(linkText.trim());
 		linkText = removeDotsIfTheSizeOfTextIs2(linkText.trim());
 		linkText = removeNoneAlphabeticSingleChar(linkText.trim());
 		linkText = removeAlphabeticSingleChar(linkText.trim());
+		linkText = ignoreAnchorTextWithSpeicalAlphabeticCharacter(linkText.trim());
 		return linkText;
+	}
+	
+	private static String ignoreAnchorTextWithSpeicalAlphabeticCharacter(String text) {
+		if(Charset.forName("US-ASCII").newEncoder().canEncode(text)){
+			return text;
+		}else{
+			return "";
+		}
+		
+	}
+
+	protected static String removeS(final String anchorText) {
+		String result = new String(anchorText);
+		result = result.replaceAll("'s ", " ");
+		return result;
 	}
 	
 	private static String convertUmlaut(String text) {

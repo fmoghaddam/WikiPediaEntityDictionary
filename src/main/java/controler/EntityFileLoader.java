@@ -29,8 +29,8 @@ public class EntityFileLoader {
 				String entityName;
 				while ((entityName = br.readLine()) != null) {
 					final String[] data = entityName.split(";");
-					map.put(URLUTF8Encoder.encode(data[2].toLowerCase()),
-							new Entity(data[0].toLowerCase(), data[1].toLowerCase(), data[2].toLowerCase(),fineName));
+					map.put(URLUTF8Encoder.encode(data[2]),
+							new Entity(data[0],data[1], data[2],fineName));
 				}
 				br.close();
 			}

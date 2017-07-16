@@ -1,11 +1,16 @@
 package model;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -17,7 +22,9 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.CellRangeAddress;
 
+import edu.stanford.nlp.ie.KBPRelationExtractor.NERTag;
 import util.MapUtil;
+import util.NERTagger;
 import util.StatisticalFunctions;
 
 public class Dictionary {
@@ -58,11 +65,11 @@ public class Dictionary {
 		for (final Entry<AnchorText, Map<String, MapEntity>> entry : dictionary.entrySet()) {
 			StringBuilder result = new StringBuilder();
 			result.append(entry.getKey().getAnchorText()).append(";").append(dictionaryKeyFrequency.get(entry.getKey()))
-					.append(";");
+			.append(";");
 			result.append(entry.getValue().size()).append(";");
 			for (MapEntity mapEntity : entry.getValue().values()) {
 				result.append(mapEntity.getEntity().getEntityName()).append(";").append(mapEntity.getFrequency())
-						.append(";");
+				.append(";");
 			}
 			LOG.info(result.toString());
 		}
@@ -75,7 +82,7 @@ public class Dictionary {
 		for (final Entry<AnchorText, Map<String, MapEntity>> entry : dictionary.entrySet()) {
 			StringBuilder result = new StringBuilder();
 			result.append(entry.getKey().getAnchorText()).append(";").append(dictionaryKeyFrequency.get(entry.getKey()))
-					.append(";");
+			.append(";");
 			final Map<String, Double> map = dictionaryValueClustringCoefficientMap.get(entry.getKey());
 			heuristicValue = dictionaryKeyFrequency.get(entry.getKey()) * StatisticalFunctions.sigmoid(map.values().stream().findFirst().get())
 					* entry.getValue().size();
@@ -118,7 +125,7 @@ public class Dictionary {
 					row.createCell((short) columnNumber).setCellValue(mapEntity.getValue().getEntity().getEntityName());
 					row.createCell((short) columnNumber + 1).setCellValue(mapEntity.getValue().getFrequency());
 					row.createCell((short) columnNumber + 2)
-							.setCellValue(mapEntity.getValue().getEntity().getCategoryFolder());
+					.setCellValue(mapEntity.getValue().getEntity().getCategoryFolder());
 					firstTime = false;
 				} else {
 					int innerColumnNumber = new Integer(columnNumber).intValue();
@@ -158,26 +165,75 @@ public class Dictionary {
 		}
 	}
 
-	public void printResultLineByLineByMerge() {
+	public void printResultLineByLineByMerge(final boolean removeNerTags) {
+		final Map<String,Set<String>> newPrintMapForSperataeFiles = new HashMap<>();
 		for (final Entry<AnchorText, Map<String, MapEntity>> entry : dictionary.entrySet()) {
 			boolean firstline = true;
 			StringBuilder result = new StringBuilder();
 			for (Entry<String, MapEntity> mapEntity : entry.getValue().entrySet()) {
 				if (firstline) {
 					result.append(entry.getKey().getAnchorText()).append(";")
-							.append(dictionaryKeyFrequency.get(entry.getKey())).append(";")
-							.append(entry.getValue().size()).append(";");
+					.append(dictionaryKeyFrequency.get(entry.getKey())).append(";")
+					.append(entry.getValue().size()).append(";");
 					firstline = false;
 				} else {
 					result.append(";;;");
 				}
 				// result.append(URLUTF8Encoder.unescape(mapEntity.getEntity().getUri())).append(";").append(mapEntity.getFrequency());
 				result.append(mapEntity.getValue().getEntity().getEntityName()).append(";")
-						.append(mapEntity.getValue().getFrequency()).append(";");
+				.append(mapEntity.getValue().getFrequency()).append(";");
 				result.append(mapEntity.getValue().getEntity().getCategoryFolder());
+				addToMap(newPrintMapForSperataeFiles,mapEntity.getValue().getEntity().getCategoryFolder(),entry.getKey().getAnchorText());
 				LOG.info(result.toString());
 				result = new StringBuilder();
 			}
+		}
+		if(removeNerTags){
+			for(Entry<String, Set<String>> a:newPrintMapForSperataeFiles.entrySet()){
+				try{
+					PrintWriter writer = new PrintWriter("log"+File.separator+a.getKey(), "UTF-8");
+					for(String s:a.getValue()){
+						if(s.isEmpty()){
+							continue;
+						}
+						final String ner = NERTagger.runTaggerString(s);
+						if(ner.charAt(0)=='<' && ner.charAt(ner.length()-1)=='>'){
+							continue;
+						}
+						writer.println(s);
+					}
+					writer.close();
+				} catch (IOException e) {
+				}
+			}
+		}else{
+			for(Entry<String, Set<String>> a:newPrintMapForSperataeFiles.entrySet()){
+				try{
+					PrintWriter writer = new PrintWriter("log"+File.separator+a.getKey(), "UTF-8");
+					for(String s:a.getValue()){
+						if(s.isEmpty()){
+							continue;
+						}
+						writer.println(s);
+					}
+					writer.close();
+				} catch (IOException e) {
+				}
+			}
+		}
+	}
+
+	private void addToMap(Map<String, Set<String>> map, String categoryFolder,
+			String anchorText) {
+		final Set<String> value = map.get(categoryFolder);
+		if(value==null){
+			final Set<String> set = new HashSet<>();
+			set.add(anchorText);
+			map.put(categoryFolder, set);
+		}else{
+			final Set<String> set = new HashSet<>(value);
+			set.add(anchorText);
+			map.put(categoryFolder, set);
 		}
 	}
 
@@ -186,10 +242,10 @@ public class Dictionary {
 			StringBuilder result = new StringBuilder();
 			for (Entry<String, MapEntity> mapEntity : entry.getValue().entrySet()) {
 				result.append(entry.getKey().getAnchorText()).append(";")
-						.append(dictionaryKeyFrequency.get(entry.getKey())).append(";").append(entry.getValue().size())
-						.append(";");
+				.append(dictionaryKeyFrequency.get(entry.getKey())).append(";").append(entry.getValue().size())
+				.append(";");
 				result.append(mapEntity.getValue().getEntity().getUri()).append(";")
-						.append(mapEntity.getValue().getFrequency()).append(";");
+				.append(mapEntity.getValue().getFrequency()).append(";");
 				LOG.info(result.toString());
 				result = new StringBuilder();
 			}

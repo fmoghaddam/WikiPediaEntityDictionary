@@ -110,6 +110,8 @@ public class AnchorTextToEntityDatasetGenerator {
 										DICTIONARY.merge(new AnchorText(linkText), entity);
 										DATASET.addPositiveData(entity.getCategoryFolder()+";"+htmlLink.getFullSentence());
 									}
+								}else{
+									
 								}
 							}
 						}

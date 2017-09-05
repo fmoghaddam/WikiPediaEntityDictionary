@@ -4,9 +4,10 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Vector;
@@ -16,9 +17,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
 
-import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
-import edu.stanford.nlp.util.CoreMap;
 import model.AnchorText;
 import model.Dataset;
 import model.Dictionary;
@@ -37,9 +36,9 @@ public class AnchorTextToEntityDatasetGenerator {
 
 	private static Map<String, Entity> entityMap;
 	private static ExecutorService executor;
-	
+
 	private static final Properties properties = new Properties();
-	
+
 	static final StanfordCoreNLP pipeline;
 	static {
 		properties.setProperty("annotators", "tokenize, ssplit, parse");
@@ -85,6 +84,8 @@ public class AnchorTextToEntityDatasetGenerator {
 					Arrays.sort(listOfFiles);
 					for (int j = 0; j < listOfFiles.length; j++) {
 						final String file = listOfFiles[j].getName();
+						//String line = new String(Files.readAllBytes(Paths.get(pathToSubFolder + File.separator + file)));
+
 						BufferedReader br = new BufferedReader(new FileReader(pathToSubFolder + File.separator + file));
 						String line;
 						int lineCounter = 0;
@@ -97,28 +98,17 @@ public class AnchorTextToEntityDatasetGenerator {
 							if(!line.contains("<")){
 								continue;
 							}
-							
-							// Why I should convert the line to lower case???
-							// line = line.toLowerCase();
 
-							final List<CoreMap> sentences = pipeline.process(line)
-									.get(CoreAnnotations.SentencesAnnotation.class);
-							for (final CoreMap sentence : sentences) {
-								final String sentenceString = sentence.toString();
-								final String sentenceWithoutHtmlTag = sentenceString.replaceAll("<[^>]*>", "");
-								final HTMLLinkExtractor htmlLinkExtractor = new HTMLLinkExtractor();
-								final Vector<HtmlLink> links = htmlLinkExtractor.grabHTMLLinks(sentenceString);
-								for (Iterator<?> iterator = links.iterator(); iterator.hasNext();) {
-									final HtmlLink htmlLink = (HtmlLink) iterator.next();
-									final Entity entity = entityMap.get(htmlLink.getLink());
-									if (entity != null) {
-										final String linkText = refactor(htmlLink.getLinkText().trim(), entity);
-										if (linkText != null && !linkText.isEmpty()) {
-											DICTIONARY.merge(new AnchorText(linkText), entity);
-											DATASET.addPositiveData(sentenceWithoutHtmlTag);
-										}else{
-											DATASET.addNegativeData(sentenceWithoutHtmlTag);
-										}
+							final HTMLLinkExtractor htmlLinkExtractor = new HTMLLinkExtractor();
+							final Vector<HtmlLink> links = htmlLinkExtractor.grabHTMLLinks(line);
+							for (Iterator<?> iterator = links.iterator(); iterator.hasNext();) {
+								final HtmlLink htmlLink = (HtmlLink) iterator.next();
+								final Entity entity = entityMap.get(htmlLink.getLink());
+								if (entity != null) {
+									final String linkText = refactor(htmlLink.getLinkText().trim(), entity);
+									if (linkText != null && !linkText.isEmpty()) {
+										DICTIONARY.merge(new AnchorText(linkText), entity);
+										DATASET.addPositiveData(entity.getCategoryFolder()+";"+htmlLink.getFullSentence());
 									}
 								}
 							}

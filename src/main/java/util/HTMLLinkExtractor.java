@@ -1,8 +1,16 @@
 package util;
 
+import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import edu.stanford.nlp.ling.CoreLabel;
+import edu.stanford.nlp.process.CoreLabelTokenFactory;
+import edu.stanford.nlp.process.PTBTokenizer;
+import edu.stanford.nlp.process.WordToSentenceProcessor;
 
 public class HTMLLinkExtractor {
 
@@ -30,38 +38,57 @@ public class HTMLLinkExtractor {
 
 		Vector<HtmlLink> result = new Vector<HtmlLink>();
 
-		matcherTag = patternTag.matcher(html);
 
-		while (matcherTag.find()) {
-
-			String href = matcherTag.group(1); // href
-			String linkText = matcherTag.group(2); // link text
-
-			matcherLink = patternLink.matcher(href);
-
-			while (matcherLink.find()) {
-
-				String link = matcherLink.group(1); // link
-				HtmlLink obj = new HtmlLink();
-				obj.setLink(link);
-				obj.setLinkText(linkText);
-
-				result.add(obj);
-
-			}
-
+		List<CoreLabel> tokens = new ArrayList<CoreLabel>();
+		PTBTokenizer<CoreLabel> tokenizer = new PTBTokenizer<CoreLabel>(new StringReader(html), new CoreLabelTokenFactory(), "");
+		while (tokenizer.hasNext()) {
+			tokens.add(tokenizer.next());
 		}
+		List<List<CoreLabel>> sentences = new WordToSentenceProcessor<CoreLabel>().process(tokens);
+		int end;
+		int start = 0;
+		ArrayList<String> sentenceList = new ArrayList<String>();
+		for (List<CoreLabel> sentence: sentences) {
+			end = sentence.get(sentence.size()-1).endPosition();
+			sentenceList.add(html.substring(start, end).trim());
+			start = end;
+		}
+		for(String sentenceString :sentenceList){
+			final String sentenceWithoutHtmlTag = sentenceString.replaceAll("<[^>]*>", "");
+			matcherTag = patternTag.matcher(sentenceString);
 
+			while (matcherTag.find()) {
+
+				String href = matcherTag.group(1); // href
+				String linkText = matcherTag.group(2); // link text
+
+				matcherLink = patternLink.matcher(href);
+
+				while (matcherLink.find()) {
+
+					String link = matcherLink.group(1); // link
+					HtmlLink obj = new HtmlLink();
+					obj.setLink(link);
+					obj.setLinkText(linkText);
+					obj.setFullSentence(sentenceWithoutHtmlTag);
+					result.add(obj);
+				}
+			}
+		}
 		return result;
-
 	}
 
 	public class HtmlLink {
 
 		String link;
 		String linkText;
+		String fullSentence;
 
 		HtmlLink(){};
+
+		public void setFullSentence(String sentenceWithoutHtmlTag) {
+			fullSentence = sentenceWithoutHtmlTag;
+		}
 
 		@Override
 		public String toString() {
@@ -71,6 +98,10 @@ public class HTMLLinkExtractor {
 
 		public String getLink() {
 			return link;
+		}
+
+		public String getFullSentence(){
+			return fullSentence;
 		}
 
 		public void setLink(String link) {

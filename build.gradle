@@ -13,10 +13,11 @@ repositories {
 //mainClassName="controler.AnchorTextToEntityGeneral"
 //mainClassName="controler.EntityToAnchorText"
 //mainClassName="controler.AnchorTextToEntity"
-mainClassName="controler.AnchorTextToEntityWikidata"
+//mainClassName="controler.AnchorTextToEntityWikidata"
+mainClassName="controler.AnchorTextToEntityDatasetGenerator"
 
 
-applicationDefaultJvmArgs = ["-Xmx5g"]
+applicationDefaultJvmArgs = ["-Xmx30g"]
 
 dependencies 
 {
@@ -26,6 +27,7 @@ dependencies
     testCompile 'junit:junit:4.12'
     compile group: 'edu.stanford.nlp', name: 'stanford-corenlp', version: '3.7.0'
     compile group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.24'
+	compile group: 'commons-io', name: 'commons-io', version: '2.5'
 }
 
 applicationDistribution.from("entities") {

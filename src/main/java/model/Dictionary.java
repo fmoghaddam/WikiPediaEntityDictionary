@@ -22,7 +22,6 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.CellRangeAddress;
 
-import edu.stanford.nlp.ie.KBPRelationExtractor.NERTag;
 import util.MapUtil;
 import util.NERTagger;
 import util.StatisticalFunctions;
@@ -287,5 +286,9 @@ public class Dictionary {
 		//Normalization section
 		// coefficientsMap = coefficientsMap.entrySet().stream().collect(Collectors.toMap(p->p.getKey(),p->p.getValue()/size));
 		return MapUtil.sortByValueDescending(coefficientsMap);
+	}
+	
+	public void load(final String folder){
+		
 	}
 }

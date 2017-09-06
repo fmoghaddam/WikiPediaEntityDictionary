@@ -15,7 +15,7 @@ import util.URLUTF8Encoder;
 public class EntityFileLoader {
 	private static final Logger LOG = Logger.getLogger(EntityFileLoader.class.getCanonicalName());
 	//private static final String ENTITY_FOLDER_NAME = "entities";
-	private static final String ENTITY_FOLDER_NAME = "wikidata";
+	private static final String ENTITY_FOLDER_NAME = "entitieswikidata";
 
 	public static Map<String, Entity> loadData() {
 		final Map<String, Entity> map = new LinkedHashMap<>();
@@ -23,18 +23,23 @@ public class EntityFileLoader {
 
 		try {
 			for (int i = 0; i < listOfFiles.length; i++) {
-				final String fineName = listOfFiles[i].getName();
+				final String fileName = listOfFiles[i].getName();
 				final BufferedReader br = new BufferedReader(
-						new FileReader(ENTITY_FOLDER_NAME + File.separator + fineName));
+						new FileReader(ENTITY_FOLDER_NAME + File.separator + fileName));
 				String entityName;
+				
 				while ((entityName = br.readLine()) != null) {
+					if(entityName==null || entityName.isEmpty()){
+						continue;
+					}
 					final String[] data = entityName.split(";");
 					map.put(URLUTF8Encoder.encode(data[2]),
-							new Entity(data[0],data[1], data[2],fineName));
+							new Entity(data[0],data[1], data[2],fileName));
 				}
 				br.close();
 			}
 		} catch (final IOException exception) {
+			
 			LOG.error(exception.getMessage());
 		}
 		return map;

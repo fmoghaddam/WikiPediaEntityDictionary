@@ -9,6 +9,7 @@ import java.util.regex.Pattern;
 
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.process.CoreLabelTokenFactory;
+import edu.stanford.nlp.process.LexedTokenFactory;
 import edu.stanford.nlp.process.PTBTokenizer;
 import edu.stanford.nlp.process.WordToSentenceProcessor;
 
@@ -40,20 +41,25 @@ public class HTMLLinkExtractor {
 
 
 		List<CoreLabel> tokens = new ArrayList<CoreLabel>();
-		PTBTokenizer<CoreLabel> tokenizer = new PTBTokenizer<CoreLabel>(new StringReader(html), new CoreLabelTokenFactory(), "");
+		
+		final LexedTokenFactory<CoreLabel> tokenFactory = new CoreLabelTokenFactory();
+		
+		final PTBTokenizer<CoreLabel> tokenizer = new PTBTokenizer<CoreLabel>(new StringReader(html), tokenFactory, "untokenizable=noneDelete");
+		
 		while (tokenizer.hasNext()) {
 			tokens.add(tokenizer.next());
 		}
-		List<List<CoreLabel>> sentences = new WordToSentenceProcessor<CoreLabel>().process(tokens);
+		
+		final List<List<CoreLabel>> sentences = new WordToSentenceProcessor<CoreLabel>().process(tokens);
 		int end;
 		int start = 0;
-		ArrayList<String> sentenceList = new ArrayList<String>();
+		final ArrayList<String> sentenceList = new ArrayList<String>();
 		for (List<CoreLabel> sentence: sentences) {
 			end = sentence.get(sentence.size()-1).endPosition();
 			sentenceList.add(html.substring(start, end).trim());
 			start = end;
 		}
-		for(String sentenceString :sentenceList){
+		for(final String sentenceString :sentenceList){
 			final String sentenceWithoutHtmlTag = sentenceString.replaceAll("<[^>]*>", "");
 			matcherTag = patternTag.matcher(sentenceString);
 

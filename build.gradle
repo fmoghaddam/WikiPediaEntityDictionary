@@ -38,6 +38,14 @@ applicationDistribution.from("wikidata") {
     into "bin/wikidata"
 }
 
+applicationDistribution.from("dictionary") {
+    into "bin/dictionary"
+}
+
+applicationDistribution.from("entitieswikidata") {
+    into "bin/entitieswikidata"
+}
+
 
 ssh.settings {
     dryRun = project.hasProperty('dryRun')

@@ -4,24 +4,32 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.Vector;
+import java.util.Map.Entry;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
 
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import model.AnchorText;
+import model.Category;
+import model.DataSourceType;
 import model.Dataset;
 import model.Dictionary;
 import model.Entity;
+import model.RoleListProvider;
+import model.RoleListProviderFileBased;
 import util.CharactersUtils;
 import util.HTMLLinkExtractor;
 import util.HTMLLinkExtractor.HtmlLink;
@@ -30,6 +38,7 @@ public class AnchorTextToEntityDatasetGenerator {
 
 	private static final Logger LOG = Logger.getLogger(AnchorTextToEntityDatasetGenerator.class.getCanonicalName());
 	private static final Dictionary DICTIONARY = new Dictionary();
+	private static final RoleListProvider roleProvider = new RoleListProviderFileBased();
 	private static final Dataset DATASET = new Dataset();
 	private static String WIKI_FILES_FOLDER = "data";
 	private static int NUMBER_OF_THREADS = 1;
@@ -46,12 +55,12 @@ public class AnchorTextToEntityDatasetGenerator {
 	}
 
 	public static void main(String[] args) {
-
 		NUMBER_OF_THREADS = Integer.parseInt(args[0]);
 		WIKI_FILES_FOLDER = args[1];
 		executor = Executors.newFixedThreadPool(NUMBER_OF_THREADS);
 
 		entityMap = EntityFileLoader.loadData();
+		roleProvider.loadRoles(DataSourceType.ALL);
 		checkWikiPages(entityMap);
 	}
 
@@ -66,9 +75,9 @@ public class AnchorTextToEntityDatasetGenerator {
 			executor.shutdown();
 			executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
 			DATASET.printPositiveDataset();
-			LOG.info("----------------------------------------------");
+			LOG.info("*****************************************************");
 			DATASET.printNegativeDataset();
-			//DICTIONARY.printResultWithoutEntitesWithClustringCoefficient();
+			// DICTIONARY.printResultWithoutEntitesWithClustringCoefficient();
 			// DICTIONARY.printResult();
 		} catch (final Exception exception) {
 			exception.printStackTrace();
@@ -79,12 +88,14 @@ public class AnchorTextToEntityDatasetGenerator {
 		final Runnable r = new Runnable() {
 			@Override
 			public void run() {
-				try {					
+				try {
 					final File[] listOfFiles = new File(pathToSubFolder).listFiles();
 					Arrays.sort(listOfFiles);
 					for (int j = 0; j < listOfFiles.length; j++) {
 						final String file = listOfFiles[j].getName();
-						//String line = new String(Files.readAllBytes(Paths.get(pathToSubFolder + File.separator + file)));
+						// String line = new
+						// String(Files.readAllBytes(Paths.get(pathToSubFolder +
+						// File.separator + file)));
 
 						BufferedReader br = new BufferedReader(new FileReader(pathToSubFolder + File.separator + file));
 						String line;
@@ -95,7 +106,7 @@ public class AnchorTextToEntityDatasetGenerator {
 								continue;
 							}
 
-							if(!line.contains("<")){
+							if (!line.contains("<")) {
 								continue;
 							}
 
@@ -108,10 +119,30 @@ public class AnchorTextToEntityDatasetGenerator {
 									final String linkText = refactor(htmlLink.getLinkText().trim(), entity);
 									if (linkText != null && !linkText.isEmpty()) {
 										DICTIONARY.merge(new AnchorText(linkText), entity);
-										DATASET.addPositiveData(entity.getCategoryFolder()+";"+htmlLink.getFullSentence());
+										DATASET.addPositiveData(
+												entity.getCategoryFolder() + ";" + htmlLink.getFullSentence());
 									}
-								}else{
-									
+								} else {
+									String anchorText = htmlLink.getLinkText();
+									for (final Entry<String, Set<Category>> roleEntity : roleProvider.getData().entrySet()) {
+										final List<Category> roleCategory = new ArrayList<>(roleEntity.getValue());
+										final String role = roleEntity.getKey().replaceAll("\\.", "\\\\.");
+										if (role.charAt(0) == '<' && role.charAt(role.length() - 1) == '>') {
+											continue;
+										}
+										String regexPattern = "(?im)";
+										regexPattern += "\\b";
+										regexPattern += role;
+										regexPattern += "\\b";
+
+										final Pattern pattern = Pattern.compile("(?im)" + regexPattern);
+										final Matcher matcher = pattern.matcher(anchorText);
+										if (matcher.find()) {
+											DATASET.addNegativeData(
+													roleCategory + ";" + htmlLink.getFullSentence());
+											break;
+										}
+									}
 								}
 							}
 						}

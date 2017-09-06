@@ -1,5 +1,13 @@
 package model;
 
+/**
+ * This class models the input which is needed for creating dictionary.
+ * The format should be:
+ * Plain text label;URI;Name_of_the_entity
+ * For example you can have a look at folder "Wikidata" or "entities"
+ * @author fbm
+ *
+ */
 public class Entity {
 	private final String name;
 	private final String uri;

@@ -21,11 +21,9 @@ import java.util.regex.Pattern;
 import org.apache.log4j.Logger;
 
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
-import model.AnchorText;
 import model.Category;
 import model.DataSourceType;
 import model.Dataset;
-import model.Dictionary;
 import model.Entity;
 import model.RoleListProvider;
 import model.RoleListProviderFileBased;
@@ -36,7 +34,6 @@ import util.HTMLLinkExtractor.HtmlLink;
 public class AnchorTextToEntityDatasetGenerator {
 
 	private static final Logger LOG = Logger.getLogger(AnchorTextToEntityDatasetGenerator.class.getCanonicalName());
-	private static final Dictionary DICTIONARY = new Dictionary();
 	private static final RoleListProvider roleProvider = new RoleListProviderFileBased();
 	private static final Dataset DATASET = new Dataset();
 	private static String WIKI_FILES_FOLDER = "data";
@@ -55,7 +52,7 @@ public class AnchorTextToEntityDatasetGenerator {
 
 	private static final StringBuilder regexPattern = new StringBuilder();
 	private static final TreeMap<String, Set<Category>> regexTextToCategories = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-	
+
 	public static void main(String[] args) {
 		NUMBER_OF_THREADS = Integer.parseInt(args[0]);
 		WIKI_FILES_FOLDER = args[1];
@@ -63,9 +60,9 @@ public class AnchorTextToEntityDatasetGenerator {
 
 		entityMap = EntityFileLoader.loadData();
 		roleProvider.loadRoles(DataSourceType.ALL);
-		
+
 		regexPattern.append("(?im)");
-		
+
 		boolean first = true;
 		for (final Entry<String, Set<Category>> roleEntity : roleProvider.getData().entrySet()) {
 			final Set<Category> categories = roleEntity.getValue();
@@ -73,15 +70,15 @@ public class AnchorTextToEntityDatasetGenerator {
 			if (role.charAt(0) == '<' && role.charAt(role.length() - 1) == '>') {
 				continue;
 			}
-			
+
 			if (first){
-		        first = false;
-		        regexPattern.append("(\\b").append(role).append("\\b)");
+				first = false;
+				regexPattern.append("(\\b").append(role).append("\\b)");
 			}
-		    else{
-		    	regexPattern.append("|").append("(\\b").append(role).append("\\b)");
-		    }
-			
+			else{
+				regexPattern.append("|").append("(\\b").append(role).append("\\b)");
+			}
+
 			regexTextToCategories.put(role, categories);
 		}
 		checkWikiPages(entityMap);
@@ -91,12 +88,19 @@ public class AnchorTextToEntityDatasetGenerator {
 		try {
 			final File[] listOfFolders = new File(WIKI_FILES_FOLDER).listFiles();
 			Arrays.sort(listOfFolders);
+			final long now = System.currentTimeMillis();
 			for (int i = 0; i < listOfFolders.length; i++) {
 				final String subFolder = listOfFolders[i].getName();
-				executor.execute(handle(WIKI_FILES_FOLDER + File.separator + subFolder + File.separator));
+				final File[] listOfFiles = new File(WIKI_FILES_FOLDER + File.separator + subFolder + File.separator).listFiles();
+				Arrays.sort(listOfFiles);
+				for (int j = 0; j < listOfFiles.length; j++) {
+					final String file = listOfFiles[j].getName();
+					executor.execute(handle(WIKI_FILES_FOLDER + File.separator + subFolder + File.separator+File.separator+file));
+				}
 			}
 			executor.shutdown();
 			executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+			System.err.println(TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis()-now));
 			DATASET.printPositiveDataset();
 			LOG.info("*****************************************************");
 			DATASET.printNegativeDataset();
@@ -112,50 +116,44 @@ public class AnchorTextToEntityDatasetGenerator {
 			@Override
 			public void run() {
 				try {
-					final File[] listOfFiles = new File(pathToSubFolder).listFiles();
-					Arrays.sort(listOfFiles);
-					for (int j = 0; j < listOfFiles.length; j++) {
-						final String file = listOfFiles[j].getName();
-						final BufferedReader br = new BufferedReader(new FileReader(pathToSubFolder + File.separator + file));
-						String line;
-						int lineCounter = 0;
-						while ((line = br.readLine()) != null) {
-							// Ignore first 3 lines as they are just titles
-							if (lineCounter++ < 3) {
-								continue;
-							}
+					final BufferedReader br = new BufferedReader(new FileReader(pathToSubFolder));
+					String line;
+					int lineCounter = 0;
+					while ((line = br.readLine()) != null) {
+						// Ignore first 3 lines as they are just titles
+						if (lineCounter++ < 3) {
+							continue;
+						}
 
-							if (!line.contains("<")) {
-								continue;
-							}
+						if (!line.contains("<")) {
+							continue;
+						}
 
-							final HTMLLinkExtractor htmlLinkExtractor = new HTMLLinkExtractor();
-							final Vector<HtmlLink> links = htmlLinkExtractor.grabHTMLLinks(line);
-							for (Iterator<?> iterator = links.iterator(); iterator.hasNext();) {
-								final HtmlLink htmlLink = (HtmlLink) iterator.next();
-								final Entity entity = entityMap.get(htmlLink.getLink());
-								if (entity != null) {
-									final String linkText = refactor(htmlLink.getLinkText().trim(), entity);
-									if (linkText != null && !linkText.isEmpty()) {
-										//DICTIONARY.merge(new AnchorText(linkText), entity);
-										DATASET.addPositiveData(
-												entity.getCategoryFolder() + ";" + htmlLink.getFullSentence());
-									}
-								} else {
-									final String anchorText = htmlLink.getLinkText();
-									final Pattern pattern = Pattern.compile(regexPattern.toString());
-									final Matcher matcher = pattern.matcher(anchorText);
-									if (matcher.find()) {
-										final Set<Category> categorySet = regexTextToCategories.get(matcher.group());
-										DATASET.addNegativeData(categorySet+";"+htmlLink.getFullSentence());
-										break;
-									}
+						final HTMLLinkExtractor htmlLinkExtractor = new HTMLLinkExtractor();
+						final Vector<HtmlLink> links = htmlLinkExtractor.grabHTMLLinks(line);
+						for (Iterator<?> iterator = links.iterator(); iterator.hasNext();) {
+							final HtmlLink htmlLink = (HtmlLink) iterator.next();
+							final Entity entity = entityMap.get(htmlLink.getLink());
+							if (entity != null) {
+								final String linkText = refactor(htmlLink.getLinkText().trim(), entity);
+								if (linkText != null && !linkText.isEmpty()) {
+									DATASET.addPositiveData(
+											entity.getCategoryFolder() + ";" + htmlLink.getFullSentence());
+								}
+							} else {
+								final String anchorText = htmlLink.getLinkText();
+								final Pattern pattern = Pattern.compile(regexPattern.toString());
+								final Matcher matcher = pattern.matcher(anchorText);
+								if (matcher.find()) {
+									final Set<Category> categorySet = regexTextToCategories.get(matcher.group());
+									DATASET.addNegativeData(categorySet+";"+htmlLink.getFullSentence());
+									break;
 								}
 							}
 						}
-						br.close();
 					}
-					System.out.println("Folder " + pathToSubFolder + " has been processed.");
+					//System.out.println("File " + pathToSubFolder +" has been processed.");
+					br.close();					
 				} catch (IOException e) {
 					e.printStackTrace();
 				}

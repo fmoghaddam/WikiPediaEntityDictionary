@@ -5,7 +5,9 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import org.apache.log4j.Logger;
 
 public class Dataset {
-	private static final Logger LOG = Logger.getLogger(Dataset.class.getCanonicalName());
+	//private static final Logger LOG = Logger.getLogger(Dataset.class.getCanonicalName());
+	private static final Logger positiveLog = Logger.getLogger("debugLogger");
+	private static final Logger negativeLog = Logger.getLogger("reportsLogger");
 	private final CopyOnWriteArrayList<String> positiveDataset = new CopyOnWriteArrayList<>();
 	private final CopyOnWriteArrayList<String> negativeDataset = new CopyOnWriteArrayList<>();
 	
@@ -33,13 +35,13 @@ public class Dataset {
 	
 	public void printPositiveDataset() {
 		for(String s:positiveDataset){
-			LOG.info(s);
+			positiveLog.info(s);
 		}
 	}
 	
 	public void printNegativeDataset() {
 		for(String s:negativeDataset){
-			LOG.info(s);
+			negativeLog.info(s);
 		}
 	}
 }

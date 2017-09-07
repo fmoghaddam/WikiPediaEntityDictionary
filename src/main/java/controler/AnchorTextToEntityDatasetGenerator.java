@@ -33,7 +33,8 @@ import util.HTMLLinkExtractor.HtmlLink;
 
 public class AnchorTextToEntityDatasetGenerator {
 
-	private static final Logger LOG = Logger.getLogger(AnchorTextToEntityDatasetGenerator.class.getCanonicalName());
+	//private static final Logger LOG = Logger.getLogger(AnchorTextToEntityDatasetGenerator.class.getCanonicalName());
+	
 	private static final RoleListProvider roleProvider = new RoleListProviderFileBased();
 	private static final Dataset DATASET = new Dataset();
 	private static String WIKI_FILES_FOLDER = "data";
@@ -54,8 +55,8 @@ public class AnchorTextToEntityDatasetGenerator {
 	private static final TreeMap<String, Set<Category>> regexTextToCategories = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
 	public static void main(String[] args) {
-		NUMBER_OF_THREADS = Integer.parseInt(args[0]);
-		WIKI_FILES_FOLDER = args[1];
+//		NUMBER_OF_THREADS = Integer.parseInt(args[0]);
+//		WIKI_FILES_FOLDER = args[1];
 		executor = Executors.newFixedThreadPool(NUMBER_OF_THREADS);
 
 		entityMap = EntityFileLoader.loadData();
@@ -89,11 +90,13 @@ public class AnchorTextToEntityDatasetGenerator {
 			final File[] listOfFolders = new File(WIKI_FILES_FOLDER).listFiles();
 			Arrays.sort(listOfFolders);
 			final long now = System.currentTimeMillis();
-			for (int i = 0; i < listOfFolders.length; i++) {
+			for (int i = 0; i < 1; i++) {
+			//for (int i = 0; i < listOfFolders.length; i++) {
 				final String subFolder = listOfFolders[i].getName();
 				final File[] listOfFiles = new File(WIKI_FILES_FOLDER + File.separator + subFolder + File.separator).listFiles();
 				Arrays.sort(listOfFiles);
-				for (int j = 0; j < listOfFiles.length; j++) {
+				for (int j = 0; j < 1; j++) {
+				//for (int j = 0; j < listOfFiles.length; j++) {
 					final String file = listOfFiles[j].getName();
 					executor.execute(handle(WIKI_FILES_FOLDER + File.separator + subFolder + File.separator+File.separator+file));
 				}
@@ -102,7 +105,7 @@ public class AnchorTextToEntityDatasetGenerator {
 			executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
 			System.err.println(TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis()-now));
 			DATASET.printPositiveDataset();
-			LOG.info("*****************************************************");
+			//LOG.info("*****************************************************");
 			DATASET.printNegativeDataset();
 			// DICTIONARY.printResultWithoutEntitesWithClustringCoefficient();
 			// DICTIONARY.printResult();
@@ -137,8 +140,7 @@ public class AnchorTextToEntityDatasetGenerator {
 							if (entity != null) {
 								final String linkText = refactor(htmlLink.getLinkText().trim(), entity);
 								if (linkText != null && !linkText.isEmpty()) {
-									DATASET.addPositiveData(
-											entity.getCategoryFolder() + ";" + htmlLink.getFullSentence());
+									DATASET.addPositiveData(entity.getCategoryFolder()+";"+htmlLink.getFullSentence());
 								}
 							} else {
 								final String anchorText = htmlLink.getLinkText();
@@ -146,13 +148,13 @@ public class AnchorTextToEntityDatasetGenerator {
 								final Matcher matcher = pattern.matcher(anchorText);
 								if (matcher.find()) {
 									final Set<Category> categorySet = regexTextToCategories.get(matcher.group());
-									DATASET.addNegativeData(categorySet+";"+htmlLink.getFullSentence());
+									DATASET.addNegativeData(categorySet+";"+matcher.group()+";"+htmlLink.getFullSentence());
 									break;
 								}
 							}
 						}
 					}
-					//System.out.println("File " + pathToSubFolder +" has been processed.");
+					System.out.println("File " + pathToSubFolder +" has been processed.");
 					br.close();					
 				} catch (IOException e) {
 					e.printStackTrace();

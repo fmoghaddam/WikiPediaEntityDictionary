@@ -7,19 +7,18 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.Vector;
+import java.util.Map.Entry;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import model.Category;
+import model.CategoryTrees;
 import model.DataSourceType;
 import model.Dataset;
 import model.Entity;
@@ -29,37 +28,47 @@ import util.CharactersUtils;
 import util.HTMLLinkExtractor;
 import util.HTMLLinkExtractor.HtmlLink;
 
-public class AnchorTextToEntityDatasetGenerator {
+public class AnchorTextToEntityDatasetGeneratorCategory {
 
-	//private static final Logger LOG = Logger.getLogger(AnchorTextToEntityDatasetGenerator.class.getCanonicalName());
-	
-	private static final RoleListProvider roleProvider = new RoleListProviderFileBased();
 	private static final Dataset DATASET = new Dataset();
 	private static String WIKI_FILES_FOLDER = "data";
+	private static String ENTITY_CATEGORY_FILE = "categoryData/article_categories_en.ttl";
+	private static String CATEGORY_TREE_FOLDER= "categoryTree";
 	private static int NUMBER_OF_THREADS = 1;
 
 	private static Map<String, Entity> entityMap;
 	private static ExecutorService executor;
 
-	private static final Properties properties = new Properties();
-
-	static final StanfordCoreNLP pipeline;
-	static {
-		properties.setProperty("annotators", "tokenize, ssplit, parse");
-		pipeline = new StanfordCoreNLP(properties);
-	}
+	private static EntityToListOfCategories entityToCategoryList;
+	
+	private static final CategoryTrees categoryTrees = new CategoryTrees();
 
 	private static final StringBuilder regexPattern = new StringBuilder();
 	private static final TreeMap<String, Set<Category>> regexTextToCategories = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-
+	
+	private static final RoleListProvider roleProvider = new RoleListProviderFileBased();
+	
 	public static void main(String[] args) {
+		
 		NUMBER_OF_THREADS = Integer.parseInt(args[0]);
 		WIKI_FILES_FOLDER = args[1];
+		ENTITY_CATEGORY_FILE = args[2];
+		
+		System.out.println("Extracting mapping between entites and categories");
+		entityToCategoryList = new EntityToListOfCategories(ENTITY_CATEGORY_FILE);
+		entityToCategoryList.parse();
+		
+		System.out.println("Loading skos category trees");
+		categoryTrees.load(CATEGORY_TREE_FOLDER);
+		
 		executor = Executors.newFixedThreadPool(NUMBER_OF_THREADS);
 
+		System.out.println("Loading seeds(list of persons, wikidata)");
 		entityMap = EntityFileLoader.loadData();
+		
+		System.out.println("Loading extracted roles (dictionaries)");
 		roleProvider.loadRoles(DataSourceType.ALL);
-
+		
 		regexPattern.append("(?im)");
 
 		boolean first = true;
@@ -80,6 +89,7 @@ public class AnchorTextToEntityDatasetGenerator {
 
 			regexTextToCategories.put(role, categories);
 		}
+		System.out.println("Start....");
 		checkWikiPages(entityMap);
 	}
 
@@ -140,12 +150,27 @@ public class AnchorTextToEntityDatasetGenerator {
 								}
 							} else {
 								final String anchorText = htmlLink.getLinkText();
+								
+								
 								final Pattern pattern = Pattern.compile(regexPattern.toString());
 								final Matcher matcher = pattern.matcher(anchorText);
 								if (matcher.find()) {
-									final Set<Category> categorySet = regexTextToCategories.get(matcher.group());
-									DATASET.addNegativeData(categorySet+";"+matcher.group()+";"+htmlLink.getFullSentence());
-									break;
+									final Set<String> categoriesOfEntity = entityToCategoryList.getEntity2categories().get(anchorText);
+									if(categoriesOfEntity==null) {
+										continue;
+									}
+									boolean negativeFlag = true;
+									String existInAnyTree="";
+									for(String cat:categoriesOfEntity) {
+										existInAnyTree = categoryTrees.existInAnyTree(cat);
+										if(existInAnyTree!=null) {
+											negativeFlag = false;
+											break;
+										}
+									}
+									if(negativeFlag) {
+										DATASET.addNegativeData(existInAnyTree+";"+matcher.group()+";"+htmlLink.getFullSentence());
+									}
 								}
 							}
 						}

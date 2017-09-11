@@ -14,7 +14,8 @@ repositories {
 //mainClassName="controler.EntityToAnchorText"
 //mainClassName="controler.AnchorTextToEntity"
 //mainClassName="controler.AnchorTextToEntityWikidata"
-mainClassName="controler.AnchorTextToEntityDatasetGenerator"
+//mainClassName="controler.AnchorTextToEntityDatasetGenerator"
+mainClassName="controler.AnchorTextToEntityDatasetGeneratorCategory"
 
 
 applicationDefaultJvmArgs = ["-Xmx30g"]
@@ -32,6 +33,10 @@ dependencies
 
 applicationDistribution.from("entities") {
     into "bin/entities"
+}
+
+applicationDistribution.from("categoryTree") {
+    into "bin/categoryTree"
 }
 
 applicationDistribution.from("wikidata") {
@@ -75,7 +80,7 @@ task deploy(dependsOn: installDist) << {
          	execute 'rm -rf ./java/WikiPediaEntityDictionary'
             put from: './build/install/WikiPediaEntityDictionary', into: './java/'
             execute 'chmod +x ./java/WikiPediaEntityDictionary/bin/WikiPediaEntityDictionary'
-            execute 'cd ./java/WikiPediaEntityDictionary/bin && ./WikiPediaEntityDictionary 50 /home/farshad/java/data/'
+            execute 'cd ./java/WikiPediaEntityDictionary/bin && ./WikiPediaEntityDictionary 50 /home/farshad/java/data/ /home/farshad/java/categoryData/article_categories_en.ttl'
             get from: './java/WikiPediaEntityDictionary/bin/log', into: '.'
         }
     }

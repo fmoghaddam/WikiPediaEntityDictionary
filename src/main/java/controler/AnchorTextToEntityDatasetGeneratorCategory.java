@@ -176,7 +176,6 @@ public class AnchorTextToEntityDatasetGeneratorCategory {
 								final String anchorText = htmlLink.getLinkText();
 								final Matcher matcher = pattern.matcher(anchorText);
 								if (matcher.find()) {
-									
 									link = java.net.URLDecoder.decode(link);
 									link = link.replaceAll(" ", "_");
 									

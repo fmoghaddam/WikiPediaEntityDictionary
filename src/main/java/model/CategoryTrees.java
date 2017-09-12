@@ -5,17 +5,18 @@ import java.io.File;
 import java.io.FileReader;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.TreeMap;
 
 import org.apache.commons.collections4.map.HashedMap;
 
 public class CategoryTrees {
 
-	private static final Map<String,Map<String,Integer>> trees = new HashedMap<>(); 
+	private static final Map<String,Map<String,Integer>> trees = new TreeMap<>(String.CASE_INSENSITIVE_ORDER); 
 		
 	public void load(String categoryTreeFolder) {
 		try {
 			final File[] listOfFiles = new File(categoryTreeFolder).listFiles();
-			for (int i = 0; i < 1; i++) {
+			for (int i = 0; i < listOfFiles.length; i++) {
 				final String file = listOfFiles[i].getName();
 				final BufferedReader br = new BufferedReader(new FileReader(categoryTreeFolder+File.separator+file));
 				String line;

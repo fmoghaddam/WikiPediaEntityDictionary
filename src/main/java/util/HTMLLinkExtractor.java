@@ -39,7 +39,6 @@ public class HTMLLinkExtractor {
 
 		Vector<HtmlLink> result = new Vector<HtmlLink>();
 
-
 		List<CoreLabel> tokens = new ArrayList<CoreLabel>();
 		
 		final LexedTokenFactory<CoreLabel> tokenFactory = new CoreLabelTokenFactory();

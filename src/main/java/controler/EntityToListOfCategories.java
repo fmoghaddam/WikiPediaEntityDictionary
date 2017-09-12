@@ -6,12 +6,11 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-
-import org.apache.commons.collections4.map.HashedMap;
+import java.util.TreeMap;
 
 public class EntityToListOfCategories {
 	private final String folderPath; 
-	private final Map<String,Set<String>> entity2categories = new HashedMap<>();
+	private final Map<String,Set<String>> entity2categories = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 	public EntityToListOfCategories(String entitycategoryfile) {
 		folderPath = entitycategoryfile;
 	}
@@ -29,7 +28,7 @@ public class EntityToListOfCategories {
 					String object = all[2];
 
 					if(predicate.contains("terms/subject")) {
-						final int subjectStart = subject.lastIndexOf(":")+1;
+						final int subjectStart = subject.lastIndexOf("/")+1;
 						final int subjectEnd = subject.indexOf(">");
 						final int objectStart = object.lastIndexOf(":")+1;
 						final int objectEnd = object.indexOf(">");

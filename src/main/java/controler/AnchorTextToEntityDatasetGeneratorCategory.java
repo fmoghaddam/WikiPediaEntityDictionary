@@ -31,12 +31,30 @@ import util.HTMLLinkExtractor.HtmlLink;
 public class AnchorTextToEntityDatasetGeneratorCategory {
 
 	private static final Dataset DATASET = new Dataset();
+	/**
+	 * This folder contains all the wikipedia pages which are
+	 * already cleaned by a python code from https://github.com/attardi/wikiextractor
+	 * and contains the links and anchor text 
+	 */
 	private static String WIKI_FILES_FOLDER = "data";
-	private static String ENTITY_CATEGORY_FILE = "categoryData/article_categories_en.ttl";
+	/**
+	 * This file is a dump which contains relation between each entity and its category
+	 * entity dbp:subject category
+	 */
+	private static String ENTITY_CATEGORY_FILE = "category/article_categories_en.ttl";
+	/**
+	 * This folder files related to category trees which are already 
+	 * calculated as a preprocess by my another project named "CategoryTreeGeneration"
+	 * https://github.com/fmoghaddam/CategoryTreeGeneration
+	 */
 	private static String CATEGORY_TREE_FOLDER= "categoryTree";
+	/**
+	 * Number of thread for parallelization
+	 */
 	private static int NUMBER_OF_THREADS = 1;
 
 	private static Map<String, Entity> entityMap;
+	
 	private static ExecutorService executor;
 
 	private static EntityToListOfCategories entityToCategoryList;
@@ -44,8 +62,13 @@ public class AnchorTextToEntityDatasetGeneratorCategory {
 	private static final CategoryTrees categoryTrees = new CategoryTrees();
 
 	private static final StringBuilder regexPattern = new StringBuilder();
+	private static Pattern pattern; 
 	private static final TreeMap<String, Set<Category>> regexTextToCategories = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 	
+	/**
+	 * Role provide which reads already calculated dictioanry of roles
+	 * from folder "dictionary"
+	 */
 	private static final RoleListProvider roleProvider = new RoleListProviderFileBased();
 	
 	public static void main(String[] args) {
@@ -54,19 +77,19 @@ public class AnchorTextToEntityDatasetGeneratorCategory {
 		WIKI_FILES_FOLDER = args[1];
 		ENTITY_CATEGORY_FILE = args[2];
 		
-		System.out.println("Extracting mapping between entites and categories");
+		System.out.println("Extracting mapping between entites and categories....");
 		entityToCategoryList = new EntityToListOfCategories(ENTITY_CATEGORY_FILE);
 		entityToCategoryList.parse();
 		
-		System.out.println("Loading skos category trees");
+		System.out.println("Loading skos category trees....");
 		categoryTrees.load(CATEGORY_TREE_FOLDER);
 		
 		executor = Executors.newFixedThreadPool(NUMBER_OF_THREADS);
 
-		System.out.println("Loading seeds(list of persons, wikidata)");
+		System.out.println("Loading seeds(list of persons, wikidata)....");
 		entityMap = EntityFileLoader.loadData();
 		
-		System.out.println("Loading extracted roles (dictionaries)");
+		System.out.println("Loading extracted roles (dictionaries)....");
 		roleProvider.loadRoles(DataSourceType.ALL);
 		
 		regexPattern.append("(?im)");
@@ -89,6 +112,7 @@ public class AnchorTextToEntityDatasetGeneratorCategory {
 
 			regexTextToCategories.put(role, categories);
 		}
+		pattern = Pattern.compile(regexPattern.toString());
 		System.out.println("Start....");
 		checkWikiPages(entityMap);
 	}
@@ -111,7 +135,6 @@ public class AnchorTextToEntityDatasetGeneratorCategory {
 			executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
 			System.err.println(TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis()-now));
 			DATASET.printPositiveDataset();
-			//LOG.info("*****************************************************");
 			DATASET.printNegativeDataset();
 			// DICTIONARY.printResultWithoutEntitesWithClustringCoefficient();
 			// DICTIONARY.printResult();
@@ -142,7 +165,8 @@ public class AnchorTextToEntityDatasetGeneratorCategory {
 						final Vector<HtmlLink> links = htmlLinkExtractor.grabHTMLLinks(line);
 						for (Iterator<?> iterator = links.iterator(); iterator.hasNext();) {
 							final HtmlLink htmlLink = (HtmlLink) iterator.next();
-							final Entity entity = entityMap.get(htmlLink.getLink());
+							String link = htmlLink.getLink();
+							final Entity entity = entityMap.get(link);
 							if (entity != null) {
 								final String linkText = refactor(htmlLink.getLinkText().trim(), entity);
 								if (linkText != null && !linkText.isEmpty()) {
@@ -150,12 +174,13 @@ public class AnchorTextToEntityDatasetGeneratorCategory {
 								}
 							} else {
 								final String anchorText = htmlLink.getLinkText();
-								
-								
-								final Pattern pattern = Pattern.compile(regexPattern.toString());
 								final Matcher matcher = pattern.matcher(anchorText);
 								if (matcher.find()) {
-									final Set<String> categoriesOfEntity = entityToCategoryList.getEntity2categories().get(anchorText);
+									
+									link = java.net.URLDecoder.decode(link);
+									link = link.replaceAll(" ", "_");
+									
+									final Set<String> categoriesOfEntity = entityToCategoryList.getEntity2categories().get(link);
 									if(categoriesOfEntity==null) {
 										continue;
 									}
@@ -169,7 +194,8 @@ public class AnchorTextToEntityDatasetGeneratorCategory {
 										}
 									}
 									if(negativeFlag) {
-										DATASET.addNegativeData(existInAnyTree+";"+matcher.group()+";"+htmlLink.getFullSentence());
+										final Set<Category> categorySet = regexTextToCategories.get(matcher.group());
+										DATASET.addNegativeData(categorySet+";"+	matcher.group()+";"+htmlLink.getFullSentence());
 									}
 								}
 							}

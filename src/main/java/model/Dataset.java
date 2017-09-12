@@ -34,12 +34,14 @@ public class Dataset {
 	}
 	
 	public void printPositiveDataset() {
+		positiveLog.info("Number of positive samples = "+positiveDataset.size());
 		for(String s:positiveDataset){
 			positiveLog.info(s);
 		}
 	}
 	
 	public void printNegativeDataset() {
+		negativeLog.info("Number of negative samples = "+negativeDataset.size());
 		for(String s:negativeDataset){
 			negativeLog.info(s);
 		}

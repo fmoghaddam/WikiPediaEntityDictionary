@@ -180,13 +180,23 @@ public class AnchorTextToEntityDatasetGeneratorCategory {
 							final HtmlLink htmlLink = (HtmlLink) iterator.next();
 							String link = htmlLink.getLink();
 							final Entity entity = entityMap.get(link);
+							/**
+							 * If anchor text refer to any link in the list
+							 * It is positive sample
+							 */
 							if (entity != null) {
 								final String linkText = refactor(htmlLink.getLinkText().trim(), entity);
 								if (linkText != null && !linkText.isEmpty()) {
 									DATASET.addPositiveData(
 											entity.getCategoryFolder() + ";" + htmlLink.getFullSentence());
 								}
-							} else {
+							}
+							/**
+							 * It is a negative sample if contains any role
+							 * and it does not have any connection 
+							 * to category trees.
+							 */
+							else {
 								final String anchorText = htmlLink.getLinkText();
 								final Matcher matcher = pattern.matcher(anchorText);
 								if (matcher.find()) {

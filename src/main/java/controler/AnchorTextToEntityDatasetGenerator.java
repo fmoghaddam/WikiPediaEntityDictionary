@@ -29,6 +29,15 @@ import util.CharactersUtils;
 import util.HTMLLinkExtractor;
 import util.HTMLLinkExtractor.HtmlLink;
 
+/**
+ * This class used to generate positive and negative role dataset.
+ * It uses only the predefined list (list of person, wikidata links, ...) 
+ * to say if a sentence is a positive or negative sample.
+ * if anchor text is referring to any link in the predefined list? then it is positive
+ * else, if there is any role in the anchor text it is negative.
+ * @author fbm
+ *
+ */
 public class AnchorTextToEntityDatasetGenerator {
 
 	//private static final Logger LOG = Logger.getLogger(AnchorTextToEntityDatasetGenerator.class.getCanonicalName());

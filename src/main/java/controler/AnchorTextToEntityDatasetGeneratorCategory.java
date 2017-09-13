@@ -91,7 +91,7 @@ public class AnchorTextToEntityDatasetGeneratorCategory {
 		entityMap = EntityFileLoader.loadData();
 
 		System.out.println("Loading extracted roles (dictionaries)....");
-		roleProvider.loadRoles(DataSourceType.WIKIPEDIA);
+		roleProvider.loadRoles(DataSourceType.WIKIDATA);
 
 		regexPattern.append("(?im)");
 
@@ -220,7 +220,7 @@ public class AnchorTextToEntityDatasetGeneratorCategory {
 									if (negativeFlag) {
 										final Set<Category> categorySet = regexTextToCategories.get(matcher.group());
 										DATASET.addNegativeData(
-												categorySet + ";" + matcher.group() + ";" + htmlLink.getFullSentence());
+												categorySet + ";" +anchorText+ ";" +matcher.group() + ";" + htmlLink.getFullSentence());
 									}
 								}
 							}

@@ -12,9 +12,12 @@ public class Entity {
 	private final String name;
 	private final String uri;
 	private final String entityName;
-	private final String categoryFolder;
+	/**
+	 * Do not forget file name (in the "entitieswikidata" folder) and category name should be same
+	 */
+	private final Category categoryFolder;
 
-	public Entity(String name, String uri, String entityName, String categoryFolder) {
+	public Entity(String name, String uri, String entityName, Category categoryFolder) {
 		super();
 		this.name = name;
 		this.uri = uri;
@@ -26,7 +29,7 @@ public class Entity {
 		this.name = "";
 		this.uri = uri;
 		this.entityName = "";
-		this.categoryFolder = "";
+		this.categoryFolder = null;
 	}
 
 	public String getName() {
@@ -41,7 +44,7 @@ public class Entity {
 		return entityName;
 	}
 
-	public String getCategoryFolder() {
+	public Category getCategoryFolder() {
 		return categoryFolder;
 	}
 

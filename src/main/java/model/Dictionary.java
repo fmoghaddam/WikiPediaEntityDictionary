@@ -124,7 +124,7 @@ public class Dictionary {
 					row.createCell((short) columnNumber).setCellValue(mapEntity.getValue().getEntity().getEntityName());
 					row.createCell((short) columnNumber + 1).setCellValue(mapEntity.getValue().getFrequency());
 					row.createCell((short) columnNumber + 2)
-					.setCellValue(mapEntity.getValue().getEntity().getCategoryFolder());
+					.setCellValue(mapEntity.getValue().getEntity().getCategoryFolder().text());
 					firstTime = false;
 				} else {
 					int innerColumnNumber = new Integer(columnNumber).intValue();
@@ -136,7 +136,7 @@ public class Dictionary {
 					cell.setCellValue(mapEntity.getValue().getFrequency());
 
 					cell = innerRow.createCell((short) innerColumnNumber++);
-					cell.setCellValue(mapEntity.getValue().getEntity().getCategoryFolder());
+					cell.setCellValue(mapEntity.getValue().getEntity().getCategoryFolder().text());
 					endRow++;
 				}
 			}
@@ -182,7 +182,7 @@ public class Dictionary {
 				result.append(mapEntity.getValue().getEntity().getEntityName()).append(";")
 				.append(mapEntity.getValue().getFrequency()).append(";");
 				result.append(mapEntity.getValue().getEntity().getCategoryFolder());
-				addToMap(newPrintMapForSperataeFiles,mapEntity.getValue().getEntity().getCategoryFolder(),entry.getKey().getAnchorText());
+				addToMap(newPrintMapForSperataeFiles,mapEntity.getValue().getEntity().getCategoryFolder().text(),entry.getKey().getAnchorText());
 				LOG.info(result.toString());
 				result = new StringBuilder();
 			}
@@ -275,7 +275,7 @@ public class Dictionary {
 		Map<String, Double> coefficientsMap = new ConcurrentHashMap<>();
 		final int size = entities.size();
 		for (Entity entity : entities) {
-			final String key = entity.getCategoryFolder();
+			final String key = entity.getCategoryFolder().text();
 			final Double coefficient = coefficientsMap.get(key);
 			if (coefficient == null) {
 				coefficientsMap.put(key, 1.);

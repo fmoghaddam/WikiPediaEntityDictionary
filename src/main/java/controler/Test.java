@@ -14,10 +14,10 @@ public class Test {
 //		String a = "my name is's the the the farshad ! and I am good#";
 //		System.err.println(AnchorTextToEntity.refactor(a, new Entity("farshad","  ","FARSHAD","TEST")));
 		String b = " 1 ";
-		System.err.println(AnchorTextToEntity.refactor(b, new Entity("farshad","  ","FARSHAD","TEST")));
+		System.err.println(AnchorTextToEntity.refactor(b, new Entity("farshad","  ","FARSHAD",null)));
 		
 		String c = "XXXX";
-		System.err.println(AnchorTextToEntity.refactor(c, new Entity("farshad","  ","FARSHAD","TEST")));
+		System.err.println(AnchorTextToEntity.refactor(c, new Entity("farshad","  ","FARSHAD",null)));
 		
 	}
 

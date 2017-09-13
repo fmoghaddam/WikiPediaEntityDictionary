@@ -9,6 +9,7 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 
+import model.Category;
 import model.Entity;
 import util.URLUTF8Encoder;
 
@@ -34,7 +35,7 @@ public class EntityFileLoader {
 					}
 					final String[] data = entityName.split(";");
 					map.put(URLUTF8Encoder.encode(data[2]),
-							new Entity(data[0],data[1], data[2],fileName));
+							new Entity(data[0],data[1], data[2],Category.resolve(fileName)));
 				}
 				br.close();
 			}

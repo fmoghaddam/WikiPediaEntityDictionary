@@ -141,11 +141,14 @@ public class AnchorTextToEntityDatasetGenerator {
 						final Vector<HtmlLink> links = htmlLinkExtractor.grabHTMLLinks(line);
 						for (Iterator<?> iterator = links.iterator(); iterator.hasNext();) {
 							final HtmlLink htmlLink = (HtmlLink) iterator.next();
+							String link = htmlLink.getLink();
+							link = java.net.URLDecoder.decode(link);
+							link = link.replaceAll(" ", "_");
 							final Entity entity = entityMap.get(htmlLink.getLink());
 							if (entity != null) {
 								final String linkText = refactor(htmlLink.getLinkText().trim(), entity);
 								if (linkText != null && !linkText.isEmpty()) {
-									DATASET.addPositiveData(entity.getCategoryFolder(),entity.getCategoryFolder()+";"+htmlLink.getFullSentence());
+									DATASET.addPositiveData(entity.getCategoryFolder(),entity.getCategoryFolder()+";"+htmlLink.getFullSentence()+";"+link,htmlLink.getFullSentence());
 								}
 							} else {
 								final String anchorText = htmlLink.getLinkText();
@@ -153,7 +156,7 @@ public class AnchorTextToEntityDatasetGenerator {
 								final Matcher matcher = pattern.matcher(anchorText);
 								if (matcher.find()) {
 									final Set<Category> categorySet = regexTextToCategories.get(matcher.group());
-									DATASET.addNegativeData(null,categorySet+";"+matcher.group()+";"+htmlLink.getFullSentence());
+									DATASET.addNegativeData(null,categorySet+";"+matcher.group()+";"+htmlLink.getFullSentence()+";"+link,htmlLink.getFullSentence());
 									break;
 								}
 							}

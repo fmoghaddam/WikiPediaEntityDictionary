@@ -103,7 +103,7 @@ public class AnchorTextToEntityDatasetGeneratorCategory {
 		entityMap = EntityFileLoader.loadData();
 
 		System.out.println("Loading extracted roles (dictionaries)....");
-		roleProvider.loadRoles(DataSourceType.WIKIDATA);
+		roleProvider.loadRoles(DataSourceType.WIKIPEDIA);
 
 		regexPattern.append("(?im)");
 
@@ -200,6 +200,8 @@ public class AnchorTextToEntityDatasetGeneratorCategory {
 							String link = htmlLink.getLink();
 							final String anchorText = htmlLink.getLinkText();
 							final Entity entity = entityMap.get(link);
+							link = java.net.URLDecoder.decode(link);
+							link = link.replaceAll(" ", "_");
 							/**
 							 * If anchor text refer to any link in the list It is positive sample
 							 */
@@ -207,7 +209,7 @@ public class AnchorTextToEntityDatasetGeneratorCategory {
 								final String linkText = refactor(htmlLink.getLinkText().trim(), entity);
 								if (linkText != null && !linkText.isEmpty()) {
 									DATASET.addPositiveData(entity.getCategoryFolder(), entity.getCategoryFolder() + ";"
-											+ anchorText + ";" + htmlLink.getFullSentence());
+											+ anchorText + ";" + htmlLink.getFullSentence()+";"+link,htmlLink.getFullSentence());
 								}
 							}
 							/**
@@ -216,9 +218,7 @@ public class AnchorTextToEntityDatasetGeneratorCategory {
 							 */
 							else {
 								final Matcher matcher = pattern.matcher(anchorText);
-								if (matcher.find()) {
-									link = java.net.URLDecoder.decode(link);
-									link = link.replaceAll(" ", "_");
+								if (matcher.find()) {									
 
 									final Set<String> categoriesOfEntity = entityToCategoryList.getEntity2categories()
 											.get(link);
@@ -239,7 +239,7 @@ public class AnchorTextToEntityDatasetGeneratorCategory {
 										final Set<Category> categorySet = regexTextToCategories.get(matcher.group());
 										for (Category cat : categorySet) {
 											DATASET.addNegativeData(cat, cat + ";" + anchorText + ";" + matcher.group()
-													+ ";" + htmlLink.getFullSentence());
+													+ ";" + htmlLink.getFullSentence()+";"+link,htmlLink.getFullSentence());
 										}
 									}
 								}

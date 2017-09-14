@@ -20,34 +20,34 @@ public class Dataset {
 	private final Map<Category,Set<String>> positiveDatasetStatistic = new HashMap<>();
 	private final Map<Category,Set<String>> negativeDatasetStatistic = new HashMap<>();
 	
-	public void addPositiveData(final Category category,final String positiveData){
-		if(positiveData==null || positiveData.isEmpty()){
+	public void addPositiveData(final Category category,final String positiveDataFull,final String positiveDataSentence){
+		if(positiveDataFull==null || positiveDataFull.isEmpty()){
 			throw new IllegalArgumentException("Postive data can not be null or empty");
 		}
-		positiveDataset.add(positiveData);
+		positiveDataset.add(positiveDataFull);
 		final Set<String> set = positiveDatasetStatistic.get(category);
 		if(set==null) {
 			final Set<String> newSet= new HashSet<>();
-			newSet.add(positiveData);
+			newSet.add(positiveDataSentence);
 			positiveDatasetStatistic.put(category, newSet);
 		}else {
-			set.add(positiveData);
+			set.add(positiveDataSentence);
 			positiveDatasetStatistic.put(category, set);
 		}
 	}
 	
-	public void addNegativeData(final Category category,final String negativeData){
-		if(negativeData==null || negativeData.isEmpty()){
+	public void addNegativeData(final Category category,final String negativeDataFull,final String negativeDataSentence){
+		if(negativeDataFull==null || negativeDataFull.isEmpty()){
 			throw new IllegalArgumentException("Negative data can not be null or empty");
 		}
-		negativeDataset.add(negativeData);
+		negativeDataset.add(negativeDataFull);
 		final Set<String> set = negativeDatasetStatistic.get(category);
 		if(set==null) {
 			final Set<String> newSet= new HashSet<>();
-			newSet.add(negativeData);
+			newSet.add(negativeDataSentence);
 			negativeDatasetStatistic.put(category, newSet);
 		}else {
-			set.add(negativeData);
+			set.add(negativeDataSentence);
 			negativeDatasetStatistic.put(category, set);
 		}
 	}

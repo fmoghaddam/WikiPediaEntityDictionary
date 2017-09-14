@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
-import controler.AnchorTextToEntityDatasetGenerator;
+import controller.AnchorTextToEntityDatasetGenerator;
 import model.Category;
 import model.DataSourceType;
 import model.Order;
@@ -19,7 +19,7 @@ public class RoleListProviderFileBased extends RoleListProvider {
 	 * It is used for selecting negative examples for dataset in {@link AnchorTextToEntityDatasetGenerator}
 	 * 
 	 */
-	private static final String DATA_FOLDER = "dictionary";
+	private static final String DATA_FOLDER = "data/dictionary";
 
 	public RoleListProviderFileBased() {
 

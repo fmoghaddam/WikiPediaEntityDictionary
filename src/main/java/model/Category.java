@@ -17,9 +17,6 @@ public enum Category {
 	}
 	
 	public static Category resolve(String text){
-		if(text.equals("chancellor")) {
-			return HEAD_OF_STATE_TAG;
-		}
 		for(Category cat: Category.values()){
 			if(cat.text().equals(text.toLowerCase())){
 				return cat;

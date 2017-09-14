@@ -1,10 +1,9 @@
-package controler;
+package controller;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map;
@@ -18,17 +17,17 @@ import org.apache.log4j.Logger;
 import model.AnchorText;
 import model.Dictionary;
 import model.Entity;
-import util.CharactersUtils;
 import util.HTMLLinkExtractor;
 import util.HTMLLinkExtractor.HtmlLink;
+import util.CharactersUtils;
 
-public class AnchorTextToEntityWikidata {
+public class AnchorTextToEntity {
 
 	@SuppressWarnings("unused")
-	private static final Logger LOG = Logger.getLogger(AnchorTextToEntityWikidata.class.getCanonicalName());
+	private static final Logger LOG = Logger.getLogger(AnchorTextToEntity.class.getCanonicalName());
 	private static final Dictionary DICTIONARY = new Dictionary();
 	private static String WIKI_FILES_FOLDER = "data";
-	private static int NUMBER_OF_THREADS = 4;
+	private static int NUMBER_OF_THREADS = 1;
 
 	private static Map<String, Entity> entityMap;
 	private static ExecutorService executor;
@@ -53,7 +52,8 @@ public class AnchorTextToEntityWikidata {
 			}
 			executor.shutdown();
 			executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
-			DICTIONARY.printResultLineByLineByMerge(true);
+			DICTIONARY.printResultWithoutEntitesWithClustringCoefficient();
+			//DICTIONARY.printResult();
 		} catch (final Exception exception) {
 			exception.printStackTrace();
 		}
@@ -71,14 +71,14 @@ public class AnchorTextToEntityWikidata {
 						BufferedReader br = new BufferedReader(new FileReader(pathToSubFolder + File.separator + file));
 						String line;
 						while ((line = br.readLine()) != null) {
-							//line = line.toLowerCase();
+							line = line.toLowerCase();
 							final HTMLLinkExtractor htmlLinkExtractor = new HTMLLinkExtractor();
 							final Vector<HtmlLink> links = htmlLinkExtractor.grabHTMLLinks(line);
 							for (Iterator<?> iterator = links.iterator(); iterator.hasNext();) {
 								final HtmlLink htmlLink = (HtmlLink) iterator.next();
 								final Entity entity = entityMap.get(htmlLink.getLink());
 								if (entity != null) {
-									final String linkText = refactor(htmlLink.getLinkText().trim());
+									final String linkText = refactor(htmlLink.getLinkText().trim(), entity);
 									if (linkText != null && !linkText.isEmpty()) {
 										DICTIONARY.merge(new AnchorText(linkText), entity);
 									}
@@ -95,40 +95,41 @@ public class AnchorTextToEntityWikidata {
 		};
 		return r;
 	}
-	
-	public static String refactor(String anchorText) {
-		String linkText = anchorText.trim();
-		linkText = removeS(anchorText.trim());
-		linkText = convertUmlaut(linkText.trim());
-		linkText = removeSpeicalCharacters(linkText.trim());
-		linkText = removeDotsIfTheSizeOfTextIs2(linkText.trim());
-		linkText = removeNoneAlphabeticSingleChar(linkText.trim());
-		linkText = removeAlphabeticSingleChar(linkText.trim());
-		linkText = ignoreAnchorTextWithSpeicalAlphabeticCharacter(linkText.trim());
-		return linkText;
-	}
-	
-	private static String ignoreAnchorTextWithSpeicalAlphabeticCharacter(String text) {
-		if(Charset.forName("US-ASCII").newEncoder().canEncode(text)){
-			return text;
-		}else{
-			return "";
-		}
-		
-	}
 
-	protected static String removeS(final String anchorText) {
+	protected static String removeFullNameAndEntityNameWordByWord(String anchorText, Entity entity) {
 		String result = new String(anchorText);
-		result = result.replaceAll("'s ", " ");
+		String[] split = result.toString().split(" ");
+		StringBuilder linkTextRefactored = new StringBuilder();
+		for (final String word : split) {
+			if (entity.getEntityName().contains(word)) {
+//				linkTextRefactored.append("X");
+				continue;
+			}
+			if (entity.getName().contains(word)) {
+//				linkTextRefactored.append("X");
+				continue;
+			} else {
+				linkTextRefactored.append(word).append(" ");
+			}
+		}
+		result = linkTextRefactored.toString();
+		result = result.replaceAll("\\s+", " ");
+		result = result.trim();
+				
+//		result = result.replaceAll("XXX", "X");
+//		result = result.replaceAll("XX", "X");
+//		
+//		if(result.contains("X")){
+//			result = result.replaceAll("X", " X ");
+//		}
 		return result;
 	}
-	
-	private static String convertUmlaut(String text) {
-		final String[][] UMLAUT_REPLACEMENTS = { { new String("Ä"), "Ae" }, { new String("Ü"), "Ue" }, { new String("Ö"), "Oe" }, { new String("ä"), "ae" }, { new String("ü"), "ue" }, { new String("ö"), "oe" }, { new String("ß"), "ss" } };
-		String result = text;
-		for (int i = 0; i < UMLAUT_REPLACEMENTS.length; i++) {
-			result = result.replace(UMLAUT_REPLACEMENTS[i][0], UMLAUT_REPLACEMENTS[i][1]);
-		}
+
+	protected static String removeFullNameAndEntityName(String anchorText, Entity entity) {
+		String result = new String(anchorText);
+		result = result.replaceAll(entity.getName(), "");
+		result = result.replaceAll(entity.getEntityName(), "");
+		result = result.replaceAll(entity.getEntityName().replaceAll("_", " "), "");
 		return result;
 	}
 
@@ -139,7 +140,26 @@ public class AnchorTextToEntityWikidata {
 		}
 		return result;
 	}
-	
+
+	protected static String removeS(final String anchorText) {
+		String result = new String(anchorText);
+		result = result.replaceAll("'s ", " ");
+		return result;
+	}
+
+	public static String refactor(String anchorText, Entity entity) {
+		String linkText = removeS(anchorText.trim());
+		linkText = removeSpeicalCharacters(linkText.trim());
+		linkText = removeFullNameAndEntityName(linkText.trim(), entity);
+		linkText = removeFullNameAndEntityNameWordByWord(linkText.trim(), entity);
+		linkText = removeStopWords(linkText.trim());
+		linkText = removeDotsIfTheSizeOfTextIs2(linkText.trim());
+		linkText = removeNoneAlphabeticSingleChar(linkText.trim());
+		linkText = removeAlphabeticSingleChar(linkText.trim());
+
+		return linkText;
+	}
+
 	protected static String removeDotsIfTheSizeOfTextIs2(String anchorText) {
 		String result = new String(anchorText);
 		if (anchorText.length() <= 2) {
@@ -147,7 +167,14 @@ public class AnchorTextToEntityWikidata {
 		}
 		return result;
 	}
-	
+
+	protected static String removeAlphabeticSingleChar(String anchorText) {
+		if (anchorText.length() == 1) {
+			return "";
+		}
+		return anchorText;
+	}
+
 	protected static String removeNoneAlphabeticSingleChar(String anchorText) {
 		if (anchorText.length() == 1) {
 			if (!Character.isLetter(anchorText.charAt(0))) {
@@ -156,11 +183,17 @@ public class AnchorTextToEntityWikidata {
 		}
 		return anchorText;
 	}
-	
-	protected static String removeAlphabeticSingleChar(String anchorText) {
-		if (anchorText.length() == 1) {
-			return "";
+
+	protected static String removeStopWords(String anchorText) {
+		String result = new String(anchorText);
+		if (anchorText.split(" ").length == 1) {
+			for (String stopWord : CharactersUtils.STOP_WORDS) {
+				if (result.equalsIgnoreCase(stopWord)) {
+					result = result.replaceAll(stopWord, "");
+				}
+			}
 		}
-		return anchorText;
+		return result;
 	}
+
 }

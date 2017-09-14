@@ -1,7 +1,11 @@
-/data/*
+/wikipediafiles/*
 data.tar.gz
 /.gradle/
 /bin/
+/log/
 /entities backup/
 /logbackup/
 /build/
+/result/
+/category/
+/backup data/

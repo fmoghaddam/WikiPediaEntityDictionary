@@ -10,12 +10,12 @@ apply plugin: 'application'
 repositories {
     jcenter()
 }
-//mainClassName="controler.AnchorTextToEntityGeneral"
-//mainClassName="controler.EntityToAnchorText"
-//mainClassName="controler.AnchorTextToEntity"
-//mainClassName="controler.AnchorTextToEntityWikidata"
-//mainClassName="controler.AnchorTextToEntityDatasetGenerator"
-mainClassName="controler.AnchorTextToEntityDatasetGeneratorCategory"
+//mainClassName="controller.AnchorTextToEntityGeneral"
+//mainClassName="controller.EntityToAnchorText"
+//mainClassName="controller.AnchorTextToEntity"
+//mainClassName="controller.AnchorTextToEntityWikidata"
+//mainClassName="controller.AnchorTextToEntityDatasetGenerator"
+mainClassName="controller.AnchorTextToEntityDatasetGeneratorCategory"
 
 
 applicationDefaultJvmArgs = ["-Xmx30g"]
@@ -31,26 +31,9 @@ dependencies
 	compile group: 'commons-io', name: 'commons-io', version: '2.5'
 }
 
-applicationDistribution.from("entities") {
-    into "bin/entities"
+applicationDistribution.from("data") {
+    into "bin/data"
 }
-
-applicationDistribution.from("categoryTree") {
-    into "bin/categoryTree"
-}
-
-applicationDistribution.from("wikidata") {
-    into "bin/wikidata"
-}
-
-applicationDistribution.from("dictionary") {
-    into "bin/dictionary"
-}
-
-applicationDistribution.from("entitieswikidata") {
-    into "bin/entitieswikidata"
-}
-
 
 ssh.settings {
     dryRun = project.hasProperty('dryRun')

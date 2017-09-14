@@ -1,4 +1,4 @@
-package controler;
+package controller;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.Vector;
@@ -17,8 +18,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import model.Category;
-import model.CategoryTrees;
 import model.DataSourceType;
 import model.Dataset;
 import model.Entity;
@@ -28,70 +29,45 @@ import util.CharactersUtils;
 import util.HTMLLinkExtractor;
 import util.HTMLLinkExtractor.HtmlLink;
 
-public class AnchorTextToEntityDatasetGeneratorCategory {
+/**
+ * This class used to generate positive and negative role dataset.
+ * It uses only the predefined list (list of person, wikidata links, ...) 
+ * to say if a sentence is a positive or negative sample.
+ * if anchor text is referring to any link in the predefined list? then it is positive
+ * else, if there is any role in the anchor text it is negative.
+ * @author fbm
+ *
+ */
+public class AnchorTextToEntityDatasetGenerator {
 
+	//private static final Logger LOG = Logger.getLogger(AnchorTextToEntityDatasetGenerator.class.getCanonicalName());
+	
+	private static final RoleListProvider roleProvider = new RoleListProviderFileBased();
 	private static final Dataset DATASET = new Dataset();
-	/**
-	 * This folder contains all the wikipedia pages which are already cleaned by a
-	 * python code from https://github.com/attardi/wikiextractor and contains the
-	 * links and anchor text
-	 */
 	private static String WIKI_FILES_FOLDER = "data";
-	/**
-	 * This file is a dump which contains relation between each entity and its
-	 * category entity dbp:subject category
-	 */
-	private static String ENTITY_CATEGORY_FILE = "category/article_categories_en.ttl";
-	/**
-	 * This folder files related to category trees which are already calculated as a
-	 * preprocess by my another project named "CategoryTreeGeneration"
-	 * https://github.com/fmoghaddam/CategoryTreeGeneration
-	 */
-	private static String CATEGORY_TREE_FOLDER = "categoryTree";
-	/**
-	 * Number of thread for parallelization
-	 */
 	private static int NUMBER_OF_THREADS = 1;
 
 	private static Map<String, Entity> entityMap;
-
 	private static ExecutorService executor;
 
-	private static EntityToListOfCategories entityToCategoryList;
+	private static final Properties properties = new Properties();
 
-	private static final CategoryTrees categoryTrees = new CategoryTrees();
+	static final StanfordCoreNLP pipeline;
+	static {
+		properties.setProperty("annotators", "tokenize, ssplit, parse");
+		pipeline = new StanfordCoreNLP(properties);
+	}
 
 	private static final StringBuilder regexPattern = new StringBuilder();
-	private static Pattern pattern;
-	private static final TreeMap<String, Set<Category>> regexTextToCategories = new TreeMap<>(
-			String.CASE_INSENSITIVE_ORDER);
-
-	/**
-	 * Role provide which reads already calculated dictioanry of roles from folder
-	 * "dictionary"
-	 */
-	private static final RoleListProvider roleProvider = new RoleListProviderFileBased();
+	private static final TreeMap<String, Set<Category>> regexTextToCategories = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
 	public static void main(String[] args) {
-
 		NUMBER_OF_THREADS = Integer.parseInt(args[0]);
 		WIKI_FILES_FOLDER = args[1];
-		ENTITY_CATEGORY_FILE = args[2];
-
-		System.out.println("Loading skos category trees....");
-		categoryTrees.load(CATEGORY_TREE_FOLDER);
-
-		System.out.println("Extracting mapping between entites and categories....");
-		entityToCategoryList = new EntityToListOfCategories(ENTITY_CATEGORY_FILE);
-		entityToCategoryList.parse();
-
 		executor = Executors.newFixedThreadPool(NUMBER_OF_THREADS);
 
-		System.out.println("Loading seeds(list of persons, wikidata)....");
 		entityMap = EntityFileLoader.loadData();
-
-		System.out.println("Loading extracted roles (dictionaries)....");
-		roleProvider.loadRoles(DataSourceType.WIKIDATA);
+		roleProvider.loadRoles(DataSourceType.ALL);
 
 		regexPattern.append("(?im)");
 
@@ -103,17 +79,16 @@ public class AnchorTextToEntityDatasetGeneratorCategory {
 				continue;
 			}
 
-			if (first) {
+			if (first){
 				first = false;
 				regexPattern.append("(\\b").append(role).append("\\b)");
-			} else {
+			}
+			else{
 				regexPattern.append("|").append("(\\b").append(role).append("\\b)");
 			}
 
 			regexTextToCategories.put(role, categories);
 		}
-		pattern = Pattern.compile(regexPattern.toString());
-		System.out.println("Start....");
 		checkWikiPages(entityMap);
 	}
 
@@ -124,20 +99,21 @@ public class AnchorTextToEntityDatasetGeneratorCategory {
 			final long now = System.currentTimeMillis();
 			for (int i = 0; i < listOfFolders.length; i++) {
 				final String subFolder = listOfFolders[i].getName();
-				final File[] listOfFiles = new File(WIKI_FILES_FOLDER + File.separator + subFolder + File.separator)
-						.listFiles();
+				final File[] listOfFiles = new File(WIKI_FILES_FOLDER + File.separator + subFolder + File.separator).listFiles();
 				Arrays.sort(listOfFiles);
 				for (int j = 0; j < listOfFiles.length; j++) {
 					final String file = listOfFiles[j].getName();
-					executor.execute(handle(
-							WIKI_FILES_FOLDER + File.separator + subFolder + File.separator + File.separator + file));
+					executor.execute(handle(WIKI_FILES_FOLDER + File.separator + subFolder + File.separator+File.separator+file));
 				}
 			}
 			executor.shutdown();
 			executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
-			System.err.println(TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - now));
+			System.err.println(TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis()-now));
 			DATASET.printPositiveDataset();
+			//LOG.info("*****************************************************");
 			DATASET.printNegativeDataset();
+			// DICTIONARY.printResultWithoutEntitesWithClustringCoefficient();
+			// DICTIONARY.printResult();
 		} catch (final Exception exception) {
 			exception.printStackTrace();
 		}
@@ -148,28 +124,15 @@ public class AnchorTextToEntityDatasetGeneratorCategory {
 			@Override
 			public void run() {
 				try {
-					// String line = new String(Files.readAllBytes(Paths.get(pathToSubFolder)),
-					// StandardCharsets.UTF_8);
-					//
-					// final DocumentBuilderFactory docBuilderFactory =
-					// DocumentBuilderFactory.newInstance();
-					// final DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
-					// final org.w3c.dom.Document document = docBuilder
-					// .parse(new ByteArrayInputStream(line.getBytes(StandardCharsets.UTF_8)));
-					//
-					// final NodeList nodeList = document.getElementsByTagName("*");
-					// for (int i = 0; i < nodeList.getLength(); i++) {
-					// final Node node = nodeList.item(i);
-					// if (node.getNodeType() == Node.ELEMENT_NODE) {
-					// if (node.getNodeName().equals("doc")) {
-					// System.err.println(node);
-					// }
-					// }
-					// }
-
 					final BufferedReader br = new BufferedReader(new FileReader(pathToSubFolder));
 					String line;
+					int lineCounter = 0;
 					while ((line = br.readLine()) != null) {
+						// Ignore first 3 lines as they are just titles
+						if (lineCounter++ < 3) {
+							continue;
+						}
+
 						if (!line.contains("<")) {
 							continue;
 						}
@@ -178,56 +141,26 @@ public class AnchorTextToEntityDatasetGeneratorCategory {
 						final Vector<HtmlLink> links = htmlLinkExtractor.grabHTMLLinks(line);
 						for (Iterator<?> iterator = links.iterator(); iterator.hasNext();) {
 							final HtmlLink htmlLink = (HtmlLink) iterator.next();
-							String link = htmlLink.getLink();
-							final Entity entity = entityMap.get(link);
-							/**
-							 * If anchor text refer to any link in the list
-							 * It is positive sample
-							 */
+							final Entity entity = entityMap.get(htmlLink.getLink());
 							if (entity != null) {
 								final String linkText = refactor(htmlLink.getLinkText().trim(), entity);
 								if (linkText != null && !linkText.isEmpty()) {
-									DATASET.addPositiveData(
-											entity.getCategoryFolder() + ";" + htmlLink.getFullSentence());
+									DATASET.addPositiveData(entity.getCategoryFolder(),entity.getCategoryFolder()+";"+htmlLink.getFullSentence());
 								}
-							}
-							/**
-							 * It is a negative sample if contains any role
-							 * and it does not have any connection 
-							 * to category trees.
-							 */
-							else {
+							} else {
 								final String anchorText = htmlLink.getLinkText();
+								final Pattern pattern = Pattern.compile(regexPattern.toString());
 								final Matcher matcher = pattern.matcher(anchorText);
 								if (matcher.find()) {
-									link = java.net.URLDecoder.decode(link);
-									link = link.replaceAll(" ", "_");
-
-									final Set<String> categoriesOfEntity = entityToCategoryList.getEntity2categories()
-											.get(link);
-									if (categoriesOfEntity == null) {
-										continue;
-									}
-									boolean negativeFlag = true;
-									String existInAnyTree = "";
-									for (String cat : categoriesOfEntity) {
-										existInAnyTree = categoryTrees.existInAnyTree(cat);
-										if (existInAnyTree != null) {
-											negativeFlag = false;
-											break;
-										}
-									}
-									if (negativeFlag) {
-										final Set<Category> categorySet = regexTextToCategories.get(matcher.group());
-										DATASET.addNegativeData(
-												categorySet + ";" +anchorText+ ";" +matcher.group() + ";" + htmlLink.getFullSentence());
-									}
+									final Set<Category> categorySet = regexTextToCategories.get(matcher.group());
+									DATASET.addNegativeData(null,categorySet+";"+matcher.group()+";"+htmlLink.getFullSentence());
+									break;
 								}
 							}
 						}
 					}
-					System.out.println("File " + pathToSubFolder + " has been processed.");
-					br.close();
+					System.out.println("File " + pathToSubFolder +" has been processed.");
+					br.close();					
 				} catch (IOException e) {
 					e.printStackTrace();
 				}

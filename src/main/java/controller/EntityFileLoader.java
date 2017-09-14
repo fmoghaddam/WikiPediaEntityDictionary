@@ -1,4 +1,4 @@
-package controler;
+package controller;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -16,7 +16,7 @@ import util.URLUTF8Encoder;
 public class EntityFileLoader {
 	private static final Logger LOG = Logger.getLogger(EntityFileLoader.class.getCanonicalName());
 	//private static final String ENTITY_FOLDER_NAME = "entities";
-	private static final String ENTITY_FOLDER_NAME = "entitieswikidata";
+	private static final String ENTITY_FOLDER_NAME = "data/entitieswikidata";
 
 	public static Map<String, Entity> loadData() {
 		final Map<String, Entity> map = new LinkedHashMap<>();
@@ -40,7 +40,6 @@ public class EntityFileLoader {
 				br.close();
 			}
 		} catch (final IOException exception) {
-			
 			LOG.error(exception.getMessage());
 		}
 		return map;

@@ -11,7 +11,7 @@ import org.apache.commons.collections4.map.HashedMap;
 
 public class CategoryTrees {
 
-	private static final Map<String,Map<String,Integer>> trees = new TreeMap<>(String.CASE_INSENSITIVE_ORDER); 
+	private static final Map<Category,Map<String,Integer>> trees = new TreeMap<>(); 
 		
 	public void load(String categoryTreeFolder) {
 		try {
@@ -25,7 +25,7 @@ public class CategoryTrees {
 					final String[] split = line.split(";");
 					map.put(split[0],Integer.parseInt(split[1]));
 				}
-				trees.put(file, map);
+				trees.put(Category.resolve(file), map);
 				br.close();
 			}
 		} catch (Exception e) {
@@ -33,8 +33,8 @@ public class CategoryTrees {
 		}
 	}
 	
-	public String existInAnyTree(String query) {
-		for(Entry<String, Map<String, Integer>> entry:trees.entrySet()) {
+	public Category existInAnyTree(String query) {
+		for(Entry<Category, Map<String, Integer>> entry:trees.entrySet()) {
 			if(entry.getValue().containsKey(query)) {
 				return entry.getKey();
 			}

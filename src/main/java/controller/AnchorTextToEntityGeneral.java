@@ -1,46 +1,42 @@
-package controler;
+package controller;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
 import java.util.Vector;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.function.BiFunction;
 
 import org.apache.log4j.Logger;
 
+import model.AnchorText;
+import model.Dictionary;
 import model.Entity;
 import util.HTMLLinkExtractor;
 import util.HTMLLinkExtractor.HtmlLink;
 
-public class EntityToAnchorText {
+public class AnchorTextToEntityGeneral {
 
-	private static final Logger LOG = Logger.getLogger(EntityToAnchorText.class.getCanonicalName());
-	private static final ConcurrentHashMap<Entity, Set<String>> DICTIONARY = new ConcurrentHashMap<>();
-	private static final String WIKI_FILES_FOLDER = "data";
-	private static final BiFunction<Set<String>, Set<String>, Set<String>> biFunction = (set, string) -> {
-		set.addAll(string);
-		return set;
-	};
-	private static Map<String, Entity> entityMap;
-	private static final ExecutorService executor = Executors.newFixedThreadPool(45);
+	@SuppressWarnings("unused")
+	private static final Logger LOG = Logger.getLogger(AnchorTextToEntityGeneral.class.getCanonicalName());
+	private static final Dictionary DICTIONARY = new Dictionary();
+	private static String WIKI_FILES_FOLDER = "data";
+	private static int NUMBER_OF_THREADS = 1;
+	private static ExecutorService executor;
 
 	public static void main(String[] args) {
-		entityMap = EntityFileLoader.loadData();
-		checkWikiPages(entityMap);
+		NUMBER_OF_THREADS = Integer.parseInt(args[0]);
+		WIKI_FILES_FOLDER = args[1];
+		executor = Executors.newFixedThreadPool(NUMBER_OF_THREADS);
+
+		checkWikiPages();
 	}
 
-	private static void checkWikiPages(final Map<String, Entity> entityMap) {
+	private static void checkWikiPages() {
 		try {
 			final File[] listOfFolders = new File(WIKI_FILES_FOLDER).listFiles();
 			Arrays.sort(listOfFolders);
@@ -50,11 +46,10 @@ public class EntityToAnchorText {
 			}
 			executor.shutdown();
 			executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
-			printResult();
+			DICTIONARY.printResultLineByLine();
 		} catch (final Exception exception) {
 			exception.printStackTrace();
 		}
-
 	}
 
 	private static Runnable handle(String pathToSubFolder) {
@@ -74,12 +69,9 @@ public class EntityToAnchorText {
 							final Vector<HtmlLink> links = htmlLinkExtractor.grabHTMLLinks(line);
 							for (Iterator<?> iterator = links.iterator(); iterator.hasNext();) {
 								final HtmlLink htmlLink = (HtmlLink) iterator.next();
-								final Entity entity = entityMap.get(htmlLink.getLink());
-								if (entity != null) {
-									final Set<String> set = new HashSet<>();
-									set.add(htmlLink.getLinkText().trim());
-									DICTIONARY.merge(entity, set, biFunction);
-								}
+								final Entity entity = new Entity(htmlLink.getLink());
+								StringBuilder linkText = new StringBuilder(htmlLink.getLinkText().trim());
+								DICTIONARY.merge(new AnchorText(linkText.toString()), entity);
 							}
 						}
 						br.close();
@@ -90,14 +82,6 @@ public class EntityToAnchorText {
 				}
 			}
 		};
-
 		return r;
-	}
-
-	private static void printResult() {
-		System.out.println("Size of map= " + DICTIONARY.size());
-		for (final Entry<Entity, Set<String>> entry : DICTIONARY.entrySet()) {
-			LOG.info(entry.getKey().getEntityName() + " ; " + entry.getValue() + " ; " + entry.getKey().getCategoryFolder());
-		}
 	}
 }

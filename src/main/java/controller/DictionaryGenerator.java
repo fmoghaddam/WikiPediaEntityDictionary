@@ -22,6 +22,13 @@ import util.CharactersUtils;
 import util.HTMLLinkExtractor;
 import util.HTMLLinkExtractor.HtmlLink;
 
+/**
+ * This class is responsible for generating Role dictionary by considering all
+ * the anchor text from wikipedia, and normalizing them and aggregation.
+ * 
+ * @author fbm
+ *
+ */
 public class DictionaryGenerator {
 
 	@SuppressWarnings("unused")
@@ -59,7 +66,7 @@ public class DictionaryGenerator {
 			}
 			executor.shutdown();
 			executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
-			DICTIONARY.printResultLineByLineByMerge(true);
+			DICTIONARY.printResultLineByLineByMerge(false);
 		} catch (final Exception exception) {
 			exception.printStackTrace();
 		}
@@ -109,9 +116,9 @@ public class DictionaryGenerator {
 	}
 
 	private static String ignoreAnchorTextWithSpeicalAlphabeticCharacter(String text) {
-		if(Charset.forName("US-ASCII").newEncoder().canEncode(text)){
+		if (Charset.forName("US-ASCII").newEncoder().canEncode(text)) {
 			return text;
-		}else{
+		} else {
 			return "";
 		}
 
@@ -124,7 +131,9 @@ public class DictionaryGenerator {
 	}
 
 	private static String convertUmlaut(String text) {
-		final String[][] UMLAUT_REPLACEMENTS = { { new String("Ä"), "Ae" }, { new String("Ü"), "Ue" }, { new String("Ö"), "Oe" }, { new String("ä"), "ae" }, { new String("ü"), "ue" }, { new String("ö"), "oe" }, { new String("ß"), "ss" } };
+		final String[][] UMLAUT_REPLACEMENTS = { { new String("Ä"), "Ae" }, { new String("Ü"), "Ue" },
+				{ new String("Ö"), "Oe" }, { new String("ä"), "ae" }, { new String("ü"), "ue" },
+				{ new String("ö"), "oe" }, { new String("ß"), "ss" } };
 		String result = text;
 		for (int i = 0; i < UMLAUT_REPLACEMENTS.length; i++) {
 			result = result.replace(UMLAUT_REPLACEMENTS[i][0], UMLAUT_REPLACEMENTS[i][1]);

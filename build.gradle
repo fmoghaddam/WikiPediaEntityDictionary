@@ -15,7 +15,8 @@ repositories {
 //mainClassName="controller.AnchorTextToEntity"
 //mainClassName="controller.AnchorTextToEntityWikidata"
 //mainClassName="controller.AnchorTextToEntityDatasetGenerator"
-mainClassName="controller.AnchorTextToEntityDatasetGeneratorCategory"
+//mainClassName="controller.AnchorTextToEntityDatasetGeneratorCategory"
+mainClassName="controller.DictionaryGenerator"
 
 
 applicationDefaultJvmArgs = ["-Xmx30g"]

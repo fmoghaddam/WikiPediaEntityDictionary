@@ -32,7 +32,7 @@ import util.HTMLLinkExtractor.HtmlLink;
  */
 public class DictionaryGenerator {
 
-	private static final DataSourceType ENTITY_DATA_SOURCE = DataSourceType.WIKIPEDIA;
+	private static final DataSourceType ENTITY_DATA_SOURCE = DataSourceType.WIKIDATA;
 	private static final Logger LOG = Logger.getLogger(DictionaryGenerator.class.getCanonicalName());
 	private static final Dictionary DICTIONARY = new Dictionary();
 	private static String WIKI_FILES_FOLDER = "wikipediafiles";
@@ -137,10 +137,12 @@ public class DictionaryGenerator {
 
 	public static String refactor(String anchorText, Entity entity) {
 		String linkText = anchorText.trim();
-		
+		//TODO: Fix this part
 		switch (ENTITY_DATA_SOURCE) {
 		case WIKIDATA:
 			linkText = removeS(anchorText.trim());
+			linkText = removeFullNameAndEntityName(linkText.trim(), entity);
+			linkText = removeFullNameAndEntityNameWordByWord(linkText.trim(), entity);
 			linkText = convertUmlaut(linkText.trim());
 			linkText = removeSpeicalCharacters(linkText.trim());
 			linkText = removeDotsIfTheSizeOfTextIs2(linkText.trim());

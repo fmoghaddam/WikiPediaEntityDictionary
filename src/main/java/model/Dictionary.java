@@ -28,6 +28,7 @@ import util.StatisticalFunctions;
 
 public class Dictionary {
 
+	private static final String RESULT_FILE_SEPARATOR = "\t";
 	private static final Logger LOG = Logger.getLogger(Dictionary.class.getCanonicalName());
 	private final ConcurrentHashMap<AnchorText, Map<String, MapEntity>> dictionary = new ConcurrentHashMap<>();
 	private final ConcurrentHashMap<AnchorText, Long> dictionaryKeyFrequency = new ConcurrentHashMap<>();
@@ -63,12 +64,12 @@ public class Dictionary {
 	public void printResult() {
 		for (final Entry<AnchorText, Map<String, MapEntity>> entry : dictionary.entrySet()) {
 			StringBuilder result = new StringBuilder();
-			result.append(entry.getKey().getAnchorText()).append(";").append(dictionaryKeyFrequency.get(entry.getKey()))
-			.append(";");
-			result.append(entry.getValue().size()).append(";");
+			result.append(entry.getKey().getAnchorText()).append(RESULT_FILE_SEPARATOR).append(dictionaryKeyFrequency.get(entry.getKey()))
+			.append(RESULT_FILE_SEPARATOR);
+			result.append(entry.getValue().size()).append(RESULT_FILE_SEPARATOR);
 			for (MapEntity mapEntity : entry.getValue().values()) {
-				result.append(mapEntity.getEntity().getEntityName()).append(";").append(mapEntity.getFrequency())
-				.append(";");
+				result.append(mapEntity.getEntity().getEntityName()).append(RESULT_FILE_SEPARATOR).append(mapEntity.getFrequency())
+				.append(RESULT_FILE_SEPARATOR);
 			}
 			LOG.info(result.toString());
 		}
@@ -80,16 +81,16 @@ public class Dictionary {
 		double heuristicValue = 0;
 		for (final Entry<AnchorText, Map<String, MapEntity>> entry : dictionary.entrySet()) {
 			StringBuilder result = new StringBuilder();
-			result.append(entry.getKey().getAnchorText()).append(";").append(dictionaryKeyFrequency.get(entry.getKey()))
-			.append(";");
+			result.append(entry.getKey().getAnchorText()).append(RESULT_FILE_SEPARATOR).append(dictionaryKeyFrequency.get(entry.getKey()))
+			.append(RESULT_FILE_SEPARATOR);
 			final Map<String, Double> map = dictionaryValueClustringCoefficientMap.get(entry.getKey());
 			heuristicValue = dictionaryKeyFrequency.get(entry.getKey()) * StatisticalFunctions.sigmoid(map.values().stream().findFirst().get())
 					* entry.getValue().size();
 
-			result.append(entry.getValue().size()).append(";").append(heuristicValue).append(";");
+			result.append(entry.getValue().size()).append(RESULT_FILE_SEPARATOR).append(heuristicValue).append(RESULT_FILE_SEPARATOR);
 
 			for (Entry<String, Double> coefficientEntry : map.entrySet()) {
-				result.append(coefficientEntry.getKey()).append(";").append(coefficientEntry.getValue()).append(";");
+				result.append(coefficientEntry.getKey()).append(RESULT_FILE_SEPARATOR).append(coefficientEntry.getValue()).append(RESULT_FILE_SEPARATOR);
 
 			}
 			LOG.info(result.toString());
@@ -171,16 +172,16 @@ public class Dictionary {
 			StringBuilder result = new StringBuilder();
 			for (Entry<String, MapEntity> mapEntity : entry.getValue().entrySet()) {
 				if (firstline) {
-					result.append(entry.getKey().getAnchorText()).append(";")
-					.append(dictionaryKeyFrequency.get(entry.getKey())).append(";")
-					.append(entry.getValue().size()).append(";");
+					result.append(entry.getKey().getAnchorText()).append(RESULT_FILE_SEPARATOR)
+					.append(dictionaryKeyFrequency.get(entry.getKey())).append(RESULT_FILE_SEPARATOR)
+					.append(entry.getValue().size()).append(RESULT_FILE_SEPARATOR);
 					firstline = false;
 				} else {
 					result.append(";;;");
 				}
 				// result.append(URLUTF8Encoder.unescape(mapEntity.getEntity().getUri())).append(";").append(mapEntity.getFrequency());
-				result.append(mapEntity.getValue().getEntity().getEntityName()).append(";")
-				.append(mapEntity.getValue().getFrequency()).append(";");
+				result.append(mapEntity.getValue().getEntity().getEntityName()).append(RESULT_FILE_SEPARATOR)
+				.append(mapEntity.getValue().getFrequency()).append(RESULT_FILE_SEPARATOR);
 				result.append(mapEntity.getValue().getEntity().getCategoryFolder());
 				addToMap(newPrintMapForSperataeFiles,mapEntity.getValue().getEntity().getCategoryFolder().text(),entry.getKey().getAnchorText());
 				LOG.info(result.toString());
@@ -240,11 +241,11 @@ public class Dictionary {
 		for (final Entry<AnchorText, Map<String, MapEntity>> entry : dictionary.entrySet()) {
 			StringBuilder result = new StringBuilder();
 			for (Entry<String, MapEntity> mapEntity : entry.getValue().entrySet()) {
-				result.append(entry.getKey().getAnchorText()).append(";")
-				.append(dictionaryKeyFrequency.get(entry.getKey())).append(";").append(entry.getValue().size())
-				.append(";");
-				result.append(mapEntity.getValue().getEntity().getUri()).append(";")
-				.append(mapEntity.getValue().getFrequency()).append(";");
+				result.append(entry.getKey().getAnchorText()).append(RESULT_FILE_SEPARATOR)
+				.append(dictionaryKeyFrequency.get(entry.getKey())).append(RESULT_FILE_SEPARATOR).append(entry.getValue().size())
+				.append(RESULT_FILE_SEPARATOR);
+				result.append(mapEntity.getValue().getEntity().getUri()).append(RESULT_FILE_SEPARATOR)
+				.append(mapEntity.getValue().getFrequency()).append(RESULT_FILE_SEPARATOR);
 				LOG.info(result.toString());
 				result = new StringBuilder();
 			}

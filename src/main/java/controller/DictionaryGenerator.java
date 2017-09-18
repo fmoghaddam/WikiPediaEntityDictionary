@@ -30,10 +30,10 @@ import util.HTMLLinkExtractor.HtmlLink;
  * @author fbm
  *
  */
-public class DictionaryGeneratorFromPersonLists {
+public class DictionaryGenerator {
 
-	@SuppressWarnings("unused")
-	private static final Logger LOG = Logger.getLogger(DictionaryGeneratorFromPersonLists.class.getCanonicalName());
+	private static final DataSourceType ENTITY_DATA_SOURCE = DataSourceType.WIKIPEDIA;
+	private static final Logger LOG = Logger.getLogger(DictionaryGenerator.class.getCanonicalName());
 	private static final Dictionary DICTIONARY = new Dictionary();
 	private static String WIKI_FILES_FOLDER = "wikipediafiles";
 	private static int NUMBER_OF_THREADS = 1;
@@ -46,7 +46,7 @@ public class DictionaryGeneratorFromPersonLists {
 		NUMBER_OF_THREADS = Integer.parseInt(args[0]);
 		WIKI_FILES_FOLDER = args[1];
 		executor = Executors.newFixedThreadPool(NUMBER_OF_THREADS);
-		entityMap = EntityFileLoader.loadData(DataSourceType.ALL);
+		entityMap = EntityFileLoader.loadData(ENTITY_DATA_SOURCE);
 		checkWikiPages();
 	}
 
@@ -81,6 +81,9 @@ public class DictionaryGeneratorFromPersonLists {
 					BufferedReader br = new BufferedReader(new FileReader(pathToSubFolder));
 					String line;
 					while ((line = br.readLine()) != null) {
+						if(!line.contains("<")) {
+							continue;
+						}
 						final HTMLLinkExtractor htmlLinkExtractor = new HTMLLinkExtractor();
 						final Vector<HtmlLink> links = htmlLinkExtractor.grabHTMLLinks(line);
 						for (Iterator<?> iterator = links.iterator(); iterator.hasNext();) {
@@ -134,15 +137,35 @@ public class DictionaryGeneratorFromPersonLists {
 
 	public static String refactor(String anchorText, Entity entity) {
 		String linkText = anchorText.trim();
-		linkText = removeS(anchorText.trim());
-		linkText = removeFullNameAndEntityName(linkText.trim(), entity);
-		linkText = removeFullNameAndEntityNameWordByWord(linkText.trim(), entity);
-		linkText = convertUmlaut(linkText.trim());
-		linkText = removeSpeicalCharacters(linkText.trim());
-		linkText = removeDotsIfTheSizeOfTextIs2(linkText.trim());
-		linkText = removeNoneAlphabeticSingleChar(linkText.trim());
-		linkText = removeAlphabeticSingleChar(linkText.trim());
-		linkText = ignoreAnchorTextWithSpeicalAlphabeticCharacter(linkText.trim());
+		
+		switch (ENTITY_DATA_SOURCE) {
+		case WIKIDATA:
+			linkText = removeS(anchorText.trim());
+			linkText = convertUmlaut(linkText.trim());
+			linkText = removeSpeicalCharacters(linkText.trim());
+			linkText = removeDotsIfTheSizeOfTextIs2(linkText.trim());
+			linkText = removeNoneAlphabeticSingleChar(linkText.trim());
+			linkText = removeAlphabeticSingleChar(linkText.trim());
+			linkText = ignoreAnchorTextWithSpeicalAlphabeticCharacter(linkText.trim());
+			break;
+		case WIKIPEDIA:
+			linkText = removeS(anchorText.trim());
+			linkText = removeFullNameAndEntityName(linkText.trim(), entity);
+			linkText = removeFullNameAndEntityNameWordByWord(linkText.trim(), entity);
+			linkText = convertUmlaut(linkText.trim());
+			linkText = removeSpeicalCharacters(linkText.trim());
+			linkText = removeDotsIfTheSizeOfTextIs2(linkText.trim());
+			linkText = removeNoneAlphabeticSingleChar(linkText.trim());
+			linkText = removeAlphabeticSingleChar(linkText.trim());
+			linkText = ignoreAnchorTextWithSpeicalAlphabeticCharacter(linkText.trim());
+			break;
+		case ALL:
+			LOG.error("DATA SOURCE SHOULDBE SELECTED");
+			break;
+		default:
+			LOG.error("DATA SOURCE SHOULDBE SELECTED");
+			break;
+		}		
 		return linkText;
 	}
 

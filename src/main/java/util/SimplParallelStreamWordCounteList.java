@@ -1,4 +1,4 @@
-package controller;
+package util;
 
 import static java.lang.Integer.compare;
 import static java.lang.Integer.parseInt;

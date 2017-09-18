@@ -284,7 +284,7 @@ public class Dictionary {
 			}
 		}
 		//Normalization section
-		// coefficientsMap = coefficientsMap.entrySet().stream().collect(Collectors.toMap(p->p.getKey(),p->p.getValue()/size));
+		coefficientsMap = coefficientsMap.entrySet().stream().collect(Collectors.toMap(p->p.getKey(),p->p.getValue()/size));
 		return MapUtil.sortByValueDescending(coefficientsMap);
 	}
 	

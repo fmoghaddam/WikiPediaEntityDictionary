@@ -19,6 +19,7 @@ import java.util.function.BiFunction;
 
 import org.apache.log4j.Logger;
 
+import model.Category;
 import model.DataSourceType;
 import model.Entity;
 import util.HTMLLinkExtractor;
@@ -37,7 +38,7 @@ public class EntityToAnchorText {
 	private static final ExecutorService executor = Executors.newFixedThreadPool(45);
 
 	public static void main(String[] args) {
-		entityMap = EntityFileLoader.loadData(DataSourceType.ALL);
+		entityMap = EntityFileLoader.loadData(DataSourceType.ALL,Category.CHAIR_PERSON_TAG);
 		checkWikiPages(entityMap);
 	}
 

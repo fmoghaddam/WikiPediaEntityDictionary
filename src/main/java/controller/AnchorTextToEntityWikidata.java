@@ -16,6 +16,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.log4j.Logger;
 
 import model.AnchorText;
+import model.Category;
 import model.DataSourceType;
 import model.Dictionary;
 import model.Entity;
@@ -40,7 +41,7 @@ public class AnchorTextToEntityWikidata {
 		WIKI_FILES_FOLDER = args[1];
 		executor = Executors.newFixedThreadPool(NUMBER_OF_THREADS);
 
-		entityMap = EntityFileLoader.loadData(DataSourceType.ALL);
+		entityMap = EntityFileLoader.loadData(DataSourceType.ALL,Category.CHAIR_PERSON_TAG);
 		checkWikiPages();
 	}
 

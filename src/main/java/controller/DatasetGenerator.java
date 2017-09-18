@@ -66,7 +66,7 @@ public class DatasetGenerator {
 		WIKI_FILES_FOLDER = args[1];
 		executor = Executors.newFixedThreadPool(NUMBER_OF_THREADS);
 
-		entityMap = EntityFileLoader.loadData(DataSourceType.ALL);
+		entityMap = EntityFileLoader.loadData(DataSourceType.ALL,Category.CHAIR_PERSON_TAG);
 		roleProvider.loadRoles(DataSourceType.ALL);
 
 		regexPattern.append("(?im)");

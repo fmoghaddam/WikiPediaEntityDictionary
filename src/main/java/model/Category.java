@@ -22,6 +22,8 @@ public enum Category {
 				return cat;
 			}
 		}
+		System.err.println("*******************************************************");
+		System.exit(1);
 		return null;
 	}
 }

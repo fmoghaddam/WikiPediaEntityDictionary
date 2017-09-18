@@ -16,6 +16,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.log4j.Logger;
 
 import model.AnchorText;
+import model.Category;
 import model.DataSourceType;
 import model.Dictionary;
 import model.Entity;
@@ -32,7 +33,14 @@ import util.HTMLLinkExtractor.HtmlLink;
  */
 public class DictionaryGenerator {
 
-	private static final DataSourceType ENTITY_DATA_SOURCE = DataSourceType.WIKIDATA;
+	/**
+	 * Dictionary generation configuration
+	 * Which datasource?
+	 * Which category?
+	 */
+	private static final DataSourceType ENTITY_DATA_SOURCE = DataSourceType.ALL;
+	private static final Category ENTITY_DATA_SOURCE_CATEGORY = Category.HEAD_OF_STATE_TAG;
+	
 	private static final Logger LOG = Logger.getLogger(DictionaryGenerator.class.getCanonicalName());
 	private static final Dictionary DICTIONARY = new Dictionary();
 	private static String WIKI_FILES_FOLDER = "wikipediafiles";
@@ -46,7 +54,7 @@ public class DictionaryGenerator {
 		NUMBER_OF_THREADS = Integer.parseInt(args[0]);
 		WIKI_FILES_FOLDER = args[1];
 		executor = Executors.newFixedThreadPool(NUMBER_OF_THREADS);
-		entityMap = EntityFileLoader.loadData(ENTITY_DATA_SOURCE);
+		entityMap = EntityFileLoader.loadData(ENTITY_DATA_SOURCE,ENTITY_DATA_SOURCE_CATEGORY);
 		checkWikiPages();
 	}
 
@@ -162,7 +170,15 @@ public class DictionaryGenerator {
 			linkText = ignoreAnchorTextWithSpeicalAlphabeticCharacter(linkText.trim());
 			break;
 		case ALL:
-			LOG.error("DATA SOURCE SHOULDBE SELECTED");
+			linkText = removeS(anchorText.trim());
+			linkText = removeFullNameAndEntityName(linkText.trim(), entity);
+			linkText = removeFullNameAndEntityNameWordByWord(linkText.trim(), entity);
+			linkText = convertUmlaut(linkText.trim());
+			linkText = removeSpeicalCharacters(linkText.trim());
+			linkText = removeDotsIfTheSizeOfTextIs2(linkText.trim());
+			linkText = removeNoneAlphabeticSingleChar(linkText.trim());
+			linkText = removeAlphabeticSingleChar(linkText.trim());
+			linkText = ignoreAnchorTextWithSpeicalAlphabeticCharacter(linkText.trim());
 			break;
 		default:
 			LOG.error("DATA SOURCE SHOULDBE SELECTED");

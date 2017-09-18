@@ -1,7 +1,6 @@
 package controller;
 import model.Category;
 import model.CategoryTrees;
-import model.Entity;
 
 public class Test {
 

@@ -31,6 +31,10 @@ import util.HTMLLinkExtractor.HtmlLink;
 public class DatasetGeneratorWithCategoryTrees {
 
 	/**
+	 * Used when we add a result to a positive/negative dataset 
+	 */
+	private static final String RESULT_FILE_SEPARATOR = "\t";
+	/**
 	 * This contains the positive and negative samples
 	 */
 	private static final Dataset DATASET = new Dataset();
@@ -208,8 +212,8 @@ public class DatasetGeneratorWithCategoryTrees {
 							if (entity != null) {
 								final String linkText = refactor(htmlLink.getLinkText().trim(), entity);
 								if (linkText != null && !linkText.isEmpty()) {
-									DATASET.addPositiveData(entity.getCategoryFolder(), entity.getCategoryFolder() + ";"
-											+ anchorText + ";" + htmlLink.getFullSentence()+";"+link,htmlLink.getFullSentence());
+									DATASET.addPositiveData(entity.getCategoryFolder(), entity.getCategoryFolder() + RESULT_FILE_SEPARATOR
+											+ anchorText + RESULT_FILE_SEPARATOR + htmlLink.getFullSentence()+RESULT_FILE_SEPARATOR+link,htmlLink.getFullSentence());
 								}
 							}
 							/**
@@ -238,8 +242,8 @@ public class DatasetGeneratorWithCategoryTrees {
 									if (negativeFlag) {
 										final Set<Category> categorySet = regexTextToCategories.get(matcher.group());
 										for (Category cat : categorySet) {
-											DATASET.addNegativeData(cat, cat + ";" + anchorText + ";" + matcher.group()
-													+ ";" + htmlLink.getFullSentence()+";"+link,htmlLink.getFullSentence());
+											DATASET.addNegativeData(cat, cat + RESULT_FILE_SEPARATOR + anchorText + RESULT_FILE_SEPARATOR + matcher.group()
+													+ RESULT_FILE_SEPARATOR + htmlLink.getFullSentence()+RESULT_FILE_SEPARATOR+link,htmlLink.getFullSentence());
 										}
 									}
 								}

@@ -38,6 +38,7 @@ import util.HTMLLinkExtractor.HtmlLink;
  * @author fbm
  *
  */
+@Deprecated
 public class DatasetGenerator {
 
 	//private static final Logger LOG = Logger.getLogger(AnchorTextToEntityDatasetGenerator.class.getCanonicalName());

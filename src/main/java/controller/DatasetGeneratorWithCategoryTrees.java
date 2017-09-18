@@ -28,7 +28,7 @@ import util.CharactersUtils;
 import util.HTMLLinkExtractor;
 import util.HTMLLinkExtractor.HtmlLink;
 
-public class AnchorTextToEntityDatasetGeneratorCategory {
+public class DatasetGeneratorWithCategoryTrees {
 
 	/**
 	 * This contains the positive and negative samples

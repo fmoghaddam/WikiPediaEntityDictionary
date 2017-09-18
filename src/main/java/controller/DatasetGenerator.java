@@ -121,6 +121,7 @@ public class DatasetGenerator {
 
 	private static Runnable handle(String pathToSubFolder) {
 		final Runnable r = new Runnable() {
+			@SuppressWarnings("deprecation")
 			@Override
 			public void run() {
 				try {

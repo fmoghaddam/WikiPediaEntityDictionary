@@ -103,7 +103,7 @@ public class DatasetGeneratorWithCategoryTrees {
 		executor = Executors.newFixedThreadPool(NUMBER_OF_THREADS);
 
 		System.out.println("Loading seeds(list of persons, wikidata)....");
-		entityMap = EntityFileLoader.loadData();
+		entityMap = EntityFileLoader.loadData(DataSourceType.ALL);
 
 		System.out.println("Loading extracted roles (dictionaries)....");
 		roleProvider.loadRoles(DataSourceType.WIKIPEDIA);

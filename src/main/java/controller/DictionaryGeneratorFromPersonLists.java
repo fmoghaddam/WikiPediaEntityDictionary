@@ -16,6 +16,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.log4j.Logger;
 
 import model.AnchorText;
+import model.DataSourceType;
 import model.Dictionary;
 import model.Entity;
 import util.CharactersUtils;
@@ -29,10 +30,10 @@ import util.HTMLLinkExtractor.HtmlLink;
  * @author fbm
  *
  */
-public class DictionaryGenerator {
+public class DictionaryGeneratorFromPersonLists {
 
 	@SuppressWarnings("unused")
-	private static final Logger LOG = Logger.getLogger(DictionaryGenerator.class.getCanonicalName());
+	private static final Logger LOG = Logger.getLogger(DictionaryGeneratorFromPersonLists.class.getCanonicalName());
 	private static final Dictionary DICTIONARY = new Dictionary();
 	private static String WIKI_FILES_FOLDER = "wikipediafiles";
 	private static int NUMBER_OF_THREADS = 1;
@@ -45,7 +46,7 @@ public class DictionaryGenerator {
 		NUMBER_OF_THREADS = Integer.parseInt(args[0]);
 		WIKI_FILES_FOLDER = args[1];
 		executor = Executors.newFixedThreadPool(NUMBER_OF_THREADS);
-		entityMap = EntityFileLoader.loadData();
+		entityMap = EntityFileLoader.loadData(DataSourceType.ALL);
 		checkWikiPages();
 	}
 
@@ -66,7 +67,7 @@ public class DictionaryGenerator {
 			}
 			executor.shutdown();
 			executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
-			DICTIONARY.printResultLineByLineByMerge(false);
+			DICTIONARY.printResult();
 		} catch (final Exception exception) {
 			exception.printStackTrace();
 		}
@@ -86,7 +87,7 @@ public class DictionaryGenerator {
 							final HtmlLink htmlLink = (HtmlLink) iterator.next();
 							final Entity entity = entityMap.get(htmlLink.getLink());
 							if (entity != null) {
-								final String linkText = refactor(htmlLink.getLinkText().trim());
+								final String linkText = refactor(htmlLink.getLinkText().trim(), entity);
 								if (linkText != null && !linkText.isEmpty()) {
 									DICTIONARY.merge(new AnchorText(linkText), entity);
 								}
@@ -103,9 +104,39 @@ public class DictionaryGenerator {
 		return r;
 	}
 
-	public static String refactor(String anchorText) {
+	protected static String removeFullNameAndEntityNameWordByWord(String anchorText, Entity entity) {
+		String result = new String(anchorText);
+		String[] split = result.toString().split(" ");
+		StringBuilder linkTextRefactored = new StringBuilder();
+		for (final String word : split) {
+			if (entity.getEntityName().contains(word)) {
+				continue;
+			}
+			if (entity.getName().contains(word)) {
+				continue;
+			} else {
+				linkTextRefactored.append(word).append(" ");
+			}
+		}
+		result = linkTextRefactored.toString();
+		result = result.replaceAll("\\s+", " ");
+		result = result.trim();
+		return result;
+	}
+
+	protected static String removeFullNameAndEntityName(String anchorText, Entity entity) {
+		String result = new String(anchorText);
+		result = result.replaceAll(entity.getName(), "");
+		result = result.replaceAll(entity.getEntityName(), "");
+		result = result.replaceAll(entity.getEntityName().replaceAll("_", " "), "");
+		return result;
+	}
+
+	public static String refactor(String anchorText, Entity entity) {
 		String linkText = anchorText.trim();
 		linkText = removeS(anchorText.trim());
+		linkText = removeFullNameAndEntityName(linkText.trim(), entity);
+		linkText = removeFullNameAndEntityNameWordByWord(linkText.trim(), entity);
 		linkText = convertUmlaut(linkText.trim());
 		linkText = removeSpeicalCharacters(linkText.trim());
 		linkText = removeDotsIfTheSizeOfTextIs2(linkText.trim());

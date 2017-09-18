@@ -23,7 +23,6 @@ import model.DataSourceType;
 import model.Dataset;
 import model.Entity;
 import model.RoleListProvider;
-import model.RoleListProviderFileBased;
 import util.CharactersUtils;
 import util.HTMLLinkExtractor;
 import util.HTMLLinkExtractor.HtmlLink;

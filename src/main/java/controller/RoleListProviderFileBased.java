@@ -1,4 +1,4 @@
-package model;
+package controller;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -7,10 +7,10 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
-import controller.DatasetGenerator;
 import model.Category;
 import model.DataSourceType;
 import model.Order;
+import model.RoleListProvider;
 
 public class RoleListProviderFileBased extends RoleListProvider {
 

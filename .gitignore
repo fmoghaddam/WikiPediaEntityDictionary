@@ -1,5 +1,5 @@
 /wikipediafiles/*
-data.tar.gz
+wikipediafiles.tar.gz
 /.gradle/
 /bin/
 /log/

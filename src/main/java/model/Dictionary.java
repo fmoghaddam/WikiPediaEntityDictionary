@@ -79,7 +79,7 @@ public class Dictionary {
 		for (final Entry<AnchorText, Map<String, MapEntity>> entry : dictionary.entrySet()) {
 			for (MapEntity mapEntity : entry.getValue().values()) {
 				StringBuilder result = new StringBuilder();
-				result.append(entry.getKey().getAnchorText()).append(mapEntity.getEntity().getCategoryFolder());
+				result.append(entry.getKey().getAnchorText()).append(RESULT_FILE_SEPARATOR).append(mapEntity.getEntity().getCategoryFolder());
 				LOG.info(result.toString());
 			}
 		}

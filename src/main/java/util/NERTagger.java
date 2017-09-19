@@ -180,6 +180,32 @@ public class NERTagger {
 		return result.toString();
 	}
 
+	/**
+	 * Run NER tagger on a plain text for a specific pattern and return aggregated tagged string
+	 * 
+	 * @param plainText
+	 * @param tag specific tag for example PERSON or LOCATION
+	 * @return
+	 */
+	public static String runTaggerString(String plainText,NER_TAG nerTag) {
+		StringBuilder result = new StringBuilder(plainText); 
+		final Map<Integer, NerTag> nerXmlParser = nerXmlParser(runTaggerXML(plainText));
+		int offset = 0;
+		for(NerTag tag:nerXmlParser.values()){ 
+			if(tag.getNerTag() == nerTag) {
+				result.replace(tag.getStartPosition()+offset, tag.getEndPosition()+offset, "<"+tag.getNerTag().text+">");
+				int diff = tag.getEndPosition()-tag.getStartPosition();
+				int tagLength = 2+tag.getNerTag().text.length();
+				if(diff>=tagLength){
+					offset -= Math.abs(diff-tagLength);
+				}else{
+					offset += Math.abs(diff-tagLength);
+				}
+			}
+		}
+		return result.toString();
+	}
+
 	public static String runTaggerStringWithoutHeadRoleReplacement(String plainText, Set<String> headRoles) {
 		StringBuilder result = new StringBuilder(plainText); 
 		final Map<Integer, NerTag> nerXmlParser = nerXmlParserWithoutHeadRoleReplacement(runTaggerXML(plainText),headRoles);

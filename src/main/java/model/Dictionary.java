@@ -74,6 +74,16 @@ public class Dictionary {
 			LOG.info(result.toString());
 		}
 	}
+	
+	public void printResultByCategory() {
+		for (final Entry<AnchorText, Map<String, MapEntity>> entry : dictionary.entrySet()) {
+			for (MapEntity mapEntity : entry.getValue().values()) {
+				StringBuilder result = new StringBuilder();
+				result.append(entry.getKey().getAnchorText()).append(mapEntity.getEntity().getCategoryFolder());
+				LOG.info(result.toString());
+			}
+		}
+	}
 
 	public void printResultWithoutEntitesWithClustringCoefficient() {
 		dictionaryValueClustringCoefficientMap = calculateClustringCoefficient();

@@ -27,21 +27,22 @@ import util.POSTagger;
 
 /**
  * This class is responsible for generating Role dictionary by considering all
- * the anchor text from wikipedia which are refereing to persons and normalizing
+ * the anchor text from wikipedia which are referring to persons and normalizing
  * them and aggregation.
  * 
  * @author fbm
  *
  */
-public class DictionaryGenerationByListOfPersons {
+public class AnchorTextToEntityListOfPersons {
 
 	/**
 	 * Dictionary generation configuration Which datasource? Which category?
 	 * Here be careful, this class only work with the list of persons not list of titles 
 	 */
-	private static final DataSourceType ENTITY_DATA_SOURCE = DataSourceType.WIKIDATA;
+	private static final DataSourceType ENTITY_DATA_SOURCE = DataSourceType.WIKIDATA_LIST_OF_PRESON;
 	private static final Dictionary DICTIONARY = new Dictionary();
-	private static final Logger LOG = Logger.getLogger(DictionaryGenerationByListOfPersons.class.getCanonicalName());
+	@SuppressWarnings("unused")
+	private static final Logger LOG = Logger.getLogger(AnchorTextToEntityListOfPersons.class.getCanonicalName());
 	private static String WIKI_FILES_FOLDER = "wikipediafiles";
 	private static int NUMBER_OF_THREADS = 1;
 
@@ -116,7 +117,7 @@ public class DictionaryGenerationByListOfPersons {
 			private String refactor(String anchor, Entity entity) {
 				anchor = spellCheck(anchor);
 				anchor = removeQutationFromStartAndEnd(anchor);
-				//anchor = convertUmlaut(anchor);
+				anchor = convertUmlaut(anchor);
 				anchor = removeNERPerson(anchor);
 				anchor = removeFullNameAndEntityName(anchor, entity);
 				anchor = removeFullNameAndEntityNameWordByWord(anchor, entity);

@@ -29,16 +29,19 @@ public class EntityFileLoader {
 		final Map<String, Entity> map = new LinkedHashMap<>();
 		switch (dataSourceType) {
 		case WIKIPEDIA:
-			dataSubFolder = ENTITY_FOLDER_NAME + File.separator + "wikipedia";
+			dataSubFolder = ENTITY_FOLDER_NAME + File.separator + "wikipediaListOfPerson";
 			break;
 		case WIKIDATA:
-			dataSubFolder = ENTITY_FOLDER_NAME + File.separator + "wikidata";
+			dataSubFolder = ENTITY_FOLDER_NAME + File.separator + "wikidataListOfTitles";
+			break;
+		case WIKIDATA_LIST_OF_PRESON:
+			dataSubFolder = ENTITY_FOLDER_NAME + File.separator + "wikidataListOfPerson";
 			break;
 		case ALL:
 			dataSubFolder = ENTITY_FOLDER_NAME + File.separator + "all";
 			break;
 		default:
-			dataSubFolder = ENTITY_FOLDER_NAME + File.separator + "wikipedia";
+			dataSubFolder = ENTITY_FOLDER_NAME + File.separator + "all";
 			break;
 		}
 		

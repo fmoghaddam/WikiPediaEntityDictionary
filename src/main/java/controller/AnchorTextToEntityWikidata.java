@@ -16,7 +16,6 @@ import java.util.concurrent.TimeUnit;
 import org.apache.log4j.Logger;
 
 import model.AnchorText;
-import model.Category;
 import model.DataSourceType;
 import model.Dictionary;
 import model.Entity;

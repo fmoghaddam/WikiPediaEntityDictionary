@@ -13,11 +13,11 @@ repositories {
 //mainClassName="controller.AnchorTextToEntityGeneral"
 //mainClassName="controller.EntityToAnchorText"
 //mainClassName="controller.AnchorTextToEntity"
-mainClassName="controller.AnchorTextToEntityWikidata"
+////mainClassName="controller.AnchorTextToEntityWikidata"
 //mainClassName="controller.AnchorTextToEntityDatasetGenerator"
 //mainClassName="controller.AnchorTextToEntityDatasetGeneratorCategory"
 //mainClassName="controller.DictionaryGenerator"
-//mainClassName="controller.DictionaryGenerationByListOfPersons"
+mainClassName="controller.DictionaryGenerationByListOfPersons"
 
 
 

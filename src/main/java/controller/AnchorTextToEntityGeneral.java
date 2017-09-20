@@ -19,12 +19,17 @@ import model.Entity;
 import util.HTMLLinkExtractor;
 import util.HTMLLinkExtractor.HtmlLink;
 
+/**
+ * This class extract ALL the anchor text and aggregate them
+ * @author fbm
+ *
+ */
 public class AnchorTextToEntityGeneral {
 
 	@SuppressWarnings("unused")
 	private static final Logger LOG = Logger.getLogger(AnchorTextToEntityGeneral.class.getCanonicalName());
 	private static final Dictionary DICTIONARY = new Dictionary();
-	private static String WIKI_FILES_FOLDER = "data";
+	private static String WIKI_FILES_FOLDER = "wikipediafiles";
 	private static int NUMBER_OF_THREADS = 1;
 	private static ExecutorService executor;
 

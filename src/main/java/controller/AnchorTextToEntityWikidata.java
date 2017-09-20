@@ -29,7 +29,7 @@ public class AnchorTextToEntityWikidata {
 	@SuppressWarnings("unused")
 	private static final Logger LOG = Logger.getLogger(AnchorTextToEntityWikidata.class.getCanonicalName());
 	private static final Dictionary DICTIONARY = new Dictionary();
-	private static String WIKI_FILES_FOLDER = "data";
+	private static String WIKI_FILES_FOLDER = "wikipediafiles";
 	private static int NUMBER_OF_THREADS = 4;
 
 	private static Map<String, Entity> entityMap;
@@ -41,7 +41,7 @@ public class AnchorTextToEntityWikidata {
 		WIKI_FILES_FOLDER = args[1];
 		executor = Executors.newFixedThreadPool(NUMBER_OF_THREADS);
 
-		entityMap = EntityFileLoader.loadData(DataSourceType.ALL,Category.CHAIR_PERSON_TAG);
+		entityMap = EntityFileLoader.loadData(DataSourceType.WIKIDATA,null);
 		checkWikiPages();
 	}
 

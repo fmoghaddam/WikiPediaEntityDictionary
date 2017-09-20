@@ -37,6 +37,7 @@ public class DictionaryGenerationByListOfPersons {
 
 	/**
 	 * Dictionary generation configuration Which datasource? Which category?
+	 * Here be careful, this class only work with the list of persons not list of titles 
 	 */
 	private static final DataSourceType ENTITY_DATA_SOURCE = DataSourceType.WIKIDATA;
 	private static final Dictionary DICTIONARY = new Dictionary();
@@ -115,7 +116,7 @@ public class DictionaryGenerationByListOfPersons {
 			private String refactor(String anchor, Entity entity) {
 				anchor = spellCheck(anchor);
 				anchor = removeQutationFromStartAndEnd(anchor);
-				anchor = convertUmlaut(anchor);
+				//anchor = convertUmlaut(anchor);
 				anchor = removeNERPerson(anchor);
 				anchor = removeFullNameAndEntityName(anchor, entity);
 				anchor = removeFullNameAndEntityNameWordByWord(anchor, entity);
@@ -131,7 +132,15 @@ public class DictionaryGenerationByListOfPersons {
 				anchor = removeDotsIfTheSizeOfTextIs2(anchor);
 				anchor = removeIfTheSizeOfTextIsLessThan2(anchor);
 				anchor = removeFamilyTitle(anchor);
+				anchor = removeHtmlTags(anchor);
 				return anchor.trim();
+			}
+
+			private String removeHtmlTags(String anchor) {
+				if(anchor.contains("<")) {
+					return "";
+				}
+				return anchor;
 			}
 
 			private String removeIfTheSizeOfTextIsLessThan2(String anchor) {
@@ -163,6 +172,8 @@ public class DictionaryGenerationByListOfPersons {
 				anchor = anchor.trim();
 				anchor = anchor.replaceAll("\\)", "");
 				anchor = anchor.replaceAll("\\(", "");
+				anchor = anchor.replaceAll("\\]", "");
+				anchor = anchor.replaceAll("\\[", "");
 				return anchor.trim();
 			}
 
@@ -185,7 +196,7 @@ public class DictionaryGenerationByListOfPersons {
 
 			private String removeFamilyTitle(String anchor) {
 				final List<String> titles = Arrays.asList("son", "father", "husbend", "wife", "dauther", "mother",
-						"family", "lady", "brother", "grandfather","grandson","grandmother","infant");
+						"family", "lady", "brother", "grandfather","grandson","grandmother","infant","child");
 				if (titles.contains(anchor.toLowerCase().trim())) {
 					return "";
 				} else {

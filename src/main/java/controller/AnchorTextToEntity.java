@@ -15,7 +15,6 @@ import java.util.concurrent.TimeUnit;
 import org.apache.log4j.Logger;
 
 import model.AnchorText;
-import model.Category;
 import model.DataSourceType;
 import model.Dictionary;
 import model.Entity;
@@ -28,7 +27,7 @@ public class AnchorTextToEntity {
 	@SuppressWarnings("unused")
 	private static final Logger LOG = Logger.getLogger(AnchorTextToEntity.class.getCanonicalName());
 	private static final Dictionary DICTIONARY = new Dictionary();
-	private static String WIKI_FILES_FOLDER = "data";
+	private static String WIKI_FILES_FOLDER = "wikipediafiles";
 	private static int NUMBER_OF_THREADS = 1;
 
 	private static Map<String, Entity> entityMap;
@@ -36,11 +35,11 @@ public class AnchorTextToEntity {
 
 	public static void main(String[] args) {
 
-		//NUMBER_OF_THREADS = Integer.parseInt(args[0]);
-		//WIKI_FILES_FOLDER = args[1];
+		NUMBER_OF_THREADS = Integer.parseInt(args[0]);
+		WIKI_FILES_FOLDER = args[1];
 		executor = Executors.newFixedThreadPool(NUMBER_OF_THREADS);
 
-		entityMap = EntityFileLoader.loadData(DataSourceType.ALL,Category.CHAIR_PERSON_TAG);
+		entityMap = EntityFileLoader.loadData(DataSourceType.ALL,null);
 		checkWikiPages(entityMap);
 	}
 
@@ -54,8 +53,8 @@ public class AnchorTextToEntity {
 			}
 			executor.shutdown();
 			executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
-			DICTIONARY.printResultWithoutEntitesWithClustringCoefficient();
-			//DICTIONARY.printResult();
+			//DICTIONARY.printResultWithoutEntitesWithClustringCoefficient();
+			DICTIONARY.printResult();
 		} catch (final Exception exception) {
 			exception.printStackTrace();
 		}

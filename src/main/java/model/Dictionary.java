@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -77,10 +78,14 @@ public class Dictionary {
 	
 	public void printResultByCategory() {
 		for (final Entry<AnchorText, Map<String, MapEntity>> entry : dictionary.entrySet()) {
+			final List<Category> allreadySeen = new ArrayList<>();
 			for (MapEntity mapEntity : entry.getValue().values()) {
 				StringBuilder result = new StringBuilder();
-				result.append(entry.getKey().getAnchorText()).append(RESULT_FILE_SEPARATOR).append(mapEntity.getEntity().getCategoryFolder());
-				LOG.info(result.toString());
+				if(!allreadySeen.contains(mapEntity.getEntity().getCategoryFolder())) {
+					allreadySeen.add(mapEntity.getEntity().getCategoryFolder());
+					result.append(entry.getKey().getAnchorText()).append(RESULT_FILE_SEPARATOR).append(mapEntity.getEntity().getCategoryFolder());
+					LOG.info(result.toString());
+				}
 			}
 		}
 	}

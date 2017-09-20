@@ -32,7 +32,7 @@ public class EntityFileLoader {
 			dataSubFolder = ENTITY_FOLDER_NAME + File.separator + "wikipedia";
 			break;
 		case WIKIDATA:
-			dataSubFolder = ENTITY_FOLDER_NAME + File.separator + "wikidataFull";
+			dataSubFolder = ENTITY_FOLDER_NAME + File.separator + "wikidata";
 			break;
 		case ALL:
 			dataSubFolder = ENTITY_FOLDER_NAME + File.separator + "all";

@@ -74,7 +74,7 @@ public class AnchorTextToEntityListOfPersons {
 			}
 			executor.shutdown();
 			executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
-			DICTIONARY.printResultByCategory();
+			DICTIONARY.printResult();
 		} catch (final Exception exception) {
 			exception.printStackTrace();
 		}

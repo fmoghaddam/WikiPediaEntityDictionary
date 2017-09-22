@@ -17,11 +17,12 @@ repositories {
 //mainClassName="controller.AnchorTextToEntityDatasetGenerator"
 //mainClassName="controller.AnchorTextToEntityDatasetGeneratorCategory"
 //mainClassName="controller.DictionaryGenerator"
-mainClassName="controller.DictionaryGenerationByListOfPersons"
+//mainClassName="controller.AnchorTextToEntityListOfPersons"
+mainClassName="controller.DatasetGeneratorWithCategoryTrees"
 
 
 
-applicationDefaultJvmArgs = ["-Xmx30g"]
+applicationDefaultJvmArgs = ["-Xmx30g", "-d64", "-XX:+UseParallelGC", "-server"]
 
 dependencies 
 {

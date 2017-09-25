@@ -39,11 +39,9 @@ public class EntityFileLoader {
 		case WIKIPEDIA_LIST_OF_PERSON_MANUAL:
 			dataSubFolder = ENTITY_FOLDER_NAME + File.separator
 					+ DataSourceType.WIKIPEDIA_LIST_OF_PERSON_MANUAL.getText();
-			;
 			break;
 		case WIKIPEDIA_LIST_OF_TILTES:
 			dataSubFolder = ENTITY_FOLDER_NAME + File.separator + DataSourceType.WIKIPEDIA_LIST_OF_TILTES.getText();
-			;
 			break;
 		case ALL:
 			dataSubFolder = ENTITY_FOLDER_NAME + File.separator + DataSourceType.ALL.getText();

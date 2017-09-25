@@ -40,7 +40,7 @@ public class AnchorTextToEntityWikidata {
 		WIKI_FILES_FOLDER = args[1];
 		executor = Executors.newFixedThreadPool(NUMBER_OF_THREADS);
 
-		entityMap = EntityFileLoader.loadData(DataSourceType.WIKIDATA,null);
+		entityMap = EntityFileLoader.loadData(DataSourceType.WIKIDATA_LABEL,null);
 		checkWikiPages();
 	}
 

@@ -21,31 +21,39 @@ public class EntityFileLoader {
 	/**
 	 * 
 	 * @param dataSourceType
-	 * @param entityDataSourceCategory should be null if we want to read all the files 
+	 * @param entityDataSourceCategory
+	 *            should be null if we want to read all the files
 	 * @return
 	 */
 	public static Map<String, Entity> loadData(DataSourceType dataSourceType, Category entityDataSourceCategory) {
 		String dataSubFolder;
 		final Map<String, Entity> map = new LinkedHashMap<>();
 		switch (dataSourceType) {
-		case WIKIPEDIA:
-			dataSubFolder = ENTITY_FOLDER_NAME + File.separator + "wikipediaListOfPerson";
-			break;
-		case WIKIDATA:
-			dataSubFolder = ENTITY_FOLDER_NAME + File.separator + "wikidataListOfTitles";
-			break;
 		case WIKIDATA_LIST_OF_PRESON:
-			dataSubFolder = ENTITY_FOLDER_NAME + File.separator + "wikidataListOfPerson";
+			dataSubFolder = ENTITY_FOLDER_NAME + File.separator + DataSourceType.WIKIDATA_LIST_OF_PRESON.getText();
+			break;
+		case WIKIDATA_LABEL:
+			dataSubFolder = ENTITY_FOLDER_NAME + File.separator + DataSourceType.WIKIDATA_LABEL.getText();
+			;
+			break;
+		case WIKIPEDIA_LIST_OF_PERSON_MANUAL:
+			dataSubFolder = ENTITY_FOLDER_NAME + File.separator
+					+ DataSourceType.WIKIPEDIA_LIST_OF_PERSON_MANUAL.getText();
+			;
+			break;
+		case WIKIPEDIA_LIST_OF_TILTES:
+			dataSubFolder = ENTITY_FOLDER_NAME + File.separator + DataSourceType.WIKIPEDIA_LIST_OF_TILTES.getText();
+			;
 			break;
 		case ALL:
-			dataSubFolder = ENTITY_FOLDER_NAME + File.separator + "all";
+			dataSubFolder = ENTITY_FOLDER_NAME + File.separator + DataSourceType.ALL.getText();
 			break;
 		default:
-			dataSubFolder = ENTITY_FOLDER_NAME + File.separator + "all";
+			dataSubFolder = ENTITY_FOLDER_NAME + File.separator + "wikipedia";
 			break;
 		}
-		
-		if(entityDataSourceCategory==null) {
+
+		if (entityDataSourceCategory == null) {
 			final File[] listOfFiles = new File(dataSubFolder).listFiles();
 
 			try {
@@ -54,14 +62,14 @@ public class EntityFileLoader {
 					final BufferedReader br = new BufferedReader(
 							new FileReader(dataSubFolder + File.separator + fileName));
 					String entityName;
-					
+
 					while ((entityName = br.readLine()) != null) {
-						if(entityName==null || entityName.isEmpty()){
+						if (entityName == null || entityName.isEmpty()) {
 							continue;
 						}
 						final String[] data = entityName.split(";");
 						map.put(URLUTF8Encoder.encode(data[2]),
-								new Entity(data[0],data[1], data[2],Category.resolve(fileName)));
+								new Entity(data[0], data[1], data[2], Category.resolve(fileName)));
 					}
 					br.close();
 				}
@@ -69,7 +77,7 @@ public class EntityFileLoader {
 				LOG.error(exception.getMessage());
 			}
 			return map;
-		}else {
+		} else {
 
 			dataSubFolder = dataSubFolder + File.separator + entityDataSourceCategory.text();
 			final String fileName = dataSubFolder;
@@ -83,8 +91,7 @@ public class EntityFileLoader {
 						continue;
 					}
 					final String[] data = entityName.split(";");
-					map.put(URLUTF8Encoder.encode(data[2]),
-							new Entity(data[0], data[1], data[2],resolve ));
+					map.put(URLUTF8Encoder.encode(data[2]), new Entity(data[0], data[1], data[2], resolve));
 				}
 				br.close();
 			} catch (final IOException exception) {

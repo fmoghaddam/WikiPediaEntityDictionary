@@ -147,7 +147,7 @@ public class DictionaryGenerator {
 		String linkText = anchorText.trim();
 		//TODO: Fix this part
 		switch (ENTITY_DATA_SOURCE) {
-		case WIKIDATA:
+		case WIKIDATA_LIST_OF_PRESON:
 			linkText = removeS(anchorText.trim());
 			linkText = removeFullNameAndEntityName(linkText.trim(), entity);
 			linkText = removeFullNameAndEntityNameWordByWord(linkText.trim(), entity);
@@ -158,7 +158,7 @@ public class DictionaryGenerator {
 			linkText = removeAlphabeticSingleChar(linkText.trim());
 			linkText = ignoreAnchorTextWithSpeicalAlphabeticCharacter(linkText.trim());
 			break;
-		case WIKIPEDIA:
+		case WIKIPEDIA_LIST_OF_PERSON_MANUAL:
 			linkText = removeS(anchorText.trim());
 			linkText = removeFullNameAndEntityName(linkText.trim(), entity);
 			linkText = removeFullNameAndEntityNameWordByWord(linkText.trim(), entity);

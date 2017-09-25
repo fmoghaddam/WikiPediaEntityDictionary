@@ -19,7 +19,7 @@ public class RoleListProviderFileBased extends RoleListProvider {
 	 * It is used for selecting negative examples for dataset in {@link DatasetGenerator}
 	 * 
 	 */
-	private static final String DATA_FOLDER = "data/dictionary";
+	private static final String DATA_FOLDER = "data/dictionary/manually cleaned";
 
 	public RoleListProviderFileBased() {
 
@@ -35,14 +35,20 @@ public class RoleListProviderFileBased extends RoleListProvider {
 		roleMap.clear();
 		String dataSubFolder;
 		switch (dataSourceType) {
-		case WIKIPEDIA:
-			dataSubFolder = DATA_FOLDER+File.separator + "wikipedia";
+		case WIKIDATA_LIST_OF_PRESON:
+			dataSubFolder = DATA_FOLDER+File.separator + DataSourceType.WIKIDATA_LIST_OF_PRESON.getText();
 			break;
-		case WIKIDATA:
-			dataSubFolder = DATA_FOLDER+File.separator + "wikidata";
+		case WIKIDATA_LABEL:
+			dataSubFolder = DATA_FOLDER+File.separator + DataSourceType.WIKIDATA_LABEL.getText();;
+			break;
+		case WIKIPEDIA_LIST_OF_PERSON_MANUAL:
+			dataSubFolder = DATA_FOLDER+File.separator + DataSourceType.WIKIPEDIA_LIST_OF_PERSON_MANUAL.getText();;
+			break;
+		case WIKIPEDIA_LIST_OF_TILTES:
+			dataSubFolder = DATA_FOLDER+File.separator + DataSourceType.WIKIPEDIA_LIST_OF_TILTES.getText();;
 			break;
 		case ALL:
-			dataSubFolder = DATA_FOLDER+File.separator + "all";
+			dataSubFolder = DATA_FOLDER+File.separator + DataSourceType.ALL.getText();
 			break;
 		default:
 			dataSubFolder = DATA_FOLDER+File.separator + "wikipedia";

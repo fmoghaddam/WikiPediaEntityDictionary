@@ -14,8 +14,8 @@ public class IntersectionOfTwoDictionary {
 	private static final RoleListProvider dic2 = new RoleListProviderFileBased();
 	
 	public static void main(String[] args) {
-		dic1.loadRoles(DataSourceType.WIKIDATA);
-		dic2.loadRoles(DataSourceType.WIKIPEDIA);
+		dic1.loadRoles(DataSourceType.WIKIDATA_LABEL);
+		dic2.loadRoles(DataSourceType.WIKIPEDIA_LIST_OF_TILTES);
 
 		final Set<String> dic1Set = dic1.getData().keySet();
 		final Set<String> dic2Set = dic2.getData().keySet();

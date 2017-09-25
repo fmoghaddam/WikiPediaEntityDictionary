@@ -17,8 +17,8 @@ repositories {
 //mainClassName="controller.AnchorTextToEntityDatasetGenerator"
 //mainClassName="controller.AnchorTextToEntityDatasetGeneratorCategory"
 //mainClassName="controller.DictionaryGenerator"
-//mainClassName="controller.AnchorTextToEntityListOfPersons"
-mainClassName="controller.DatasetGeneratorWithCategoryTrees"
+mainClassName="controller.AnchorTextToEntityListOfPersons"
+//mainClassName="controller.DatasetGeneratorWithCategoryTrees"
 
 
 

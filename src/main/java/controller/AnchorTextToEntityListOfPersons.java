@@ -27,8 +27,8 @@ import util.POSTagger;
 
 /**
  * This class is responsible for generating Role dictionary by considering all
- * the anchor text from wikipedia which are referring to persons and normalizing
- * them and aggregation.
+ * the anchor text from wikipedia which are referring to only persons and normalizing
+ * them and aggregation. The reason of ofly person is because of refactor function. 
  * 
  * @author fbm
  *
@@ -74,7 +74,7 @@ public class AnchorTextToEntityListOfPersons {
 			}
 			executor.shutdown();
 			executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
-			DICTIONARY.printResult();
+			DICTIONARY.printResultLineByLineByMerge(false);
 		} catch (final Exception exception) {
 			exception.printStackTrace();
 		}

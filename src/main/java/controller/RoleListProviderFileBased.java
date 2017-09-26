@@ -76,6 +76,6 @@ public class RoleListProviderFileBased extends RoleListProvider {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		sortBasedOnLenghth(Order.ASC);
+		sortBasedOnLenghth(Order.DESC);
 	}
 }

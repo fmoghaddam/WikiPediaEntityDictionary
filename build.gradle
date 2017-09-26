@@ -17,9 +17,8 @@ repositories {
 //mainClassName="controller.AnchorTextToEntityDatasetGenerator"
 //mainClassName="controller.AnchorTextToEntityDatasetGeneratorCategory"
 //mainClassName="controller.DictionaryGenerator"
-mainClassName="controller.AnchorTextToEntityListOfPersons"
-//mainClassName="controller.DatasetGeneratorWithCategoryTrees"
-
+//mainClassName="controller.AnchorTextToEntityListOfPersons"
+mainClassName="controller.DatasetGeneratorWithCategoryTrees"
 
 
 applicationDefaultJvmArgs = ["-Xmx30g", "-d64", "-XX:+UseParallelGC", "-server"]
@@ -68,6 +67,20 @@ task deploy(dependsOn: installDist) << {
          	execute 'rm -rf ./java/WikiPediaEntityDictionary'
             put from: './build/install/WikiPediaEntityDictionary', into: './java/'
             execute 'chmod +x ./java/WikiPediaEntityDictionary/bin/WikiPediaEntityDictionary'
+            execute 'cd ./java/WikiPediaEntityDictionary/bin && ./WikiPediaEntityDictionary 50 /home/farshad/java/data/ /home/farshad/java/categoryData/article_categories_en.ttl'
+            get from: './java/WikiPediaEntityDictionary/bin/log', into: '.'
+        }
+    }
+}
+
+task deployZip(dependsOn: distTar) << {
+    ssh.run {
+        session(remotes.server) {
+         	execute 'rm -rf ./java/WikiPediaEntityDictionary'
+         	//execute 'rm ./java/WikiPediaEntityDictionary.tar'
+            put from: './build/distributions/WikiPediaEntityDictionary.tar', into: './java/'
+            execute 'cd ./java && tar -xvf WikiPediaEntityDictionary.tar'            
+            execute 'cd ./java && chmod +x WikiPediaEntityDictionary/bin/WikiPediaEntityDictionary'
             execute 'cd ./java/WikiPediaEntityDictionary/bin && ./WikiPediaEntityDictionary 50 /home/farshad/java/data/ /home/farshad/java/categoryData/article_categories_en.ttl'
             get from: './java/WikiPediaEntityDictionary/bin/log', into: '.'
         }

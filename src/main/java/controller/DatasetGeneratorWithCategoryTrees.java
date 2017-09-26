@@ -30,7 +30,7 @@ import util.HTMLLinkExtractor.HtmlLink;
 public class DatasetGeneratorWithCategoryTrees {
 
 	/**
-	 * Used when we add a result to a positive/negative dataset 
+	 * Used when we add a result to a positive/negative dataset
 	 */
 	private static final String RESULT_FILE_SEPARATOR = "\t";
 	/**
@@ -103,10 +103,13 @@ public class DatasetGeneratorWithCategoryTrees {
 		executor = Executors.newFixedThreadPool(NUMBER_OF_THREADS);
 
 		System.out.println("Loading seeds(list of persons, wikidata)....");
-		entityMap = EntityFileLoader.loadData(DataSourceType.WIKIPEDIA_LIST_OF_TILTES,null);
+		entityMap = EntityFileLoader.loadData(DataSourceType.WIKIPEDIA_LIST_OF_TILTES, null);
+		entityMap.putAll(EntityFileLoader.loadData(DataSourceType.WIKIDATA_LIST_OF_PRESON, null));
+		entityMap.putAll(EntityFileLoader.loadData(DataSourceType.WIKIPEDIA_LIST_OF_PERSON_MANUAL, null));
 
 		System.out.println("Loading extracted roles (dictionaries)....");
 		roleProvider.loadRoles(DataSourceType.WIKIPEDIA_LIST_OF_TILTES);
+		roleProvider.loadRoles(DataSourceType.WIKIDATA_LABEL);
 
 		regexPattern.append("(?im)");
 
@@ -170,25 +173,6 @@ public class DatasetGeneratorWithCategoryTrees {
 			@Override
 			public void run() {
 				try {
-					// String line = new String(Files.readAllBytes(Paths.get(pathToSubFolder)),
-					// StandardCharsets.UTF_8);
-					//
-					// final DocumentBuilderFactory docBuilderFactory =
-					// DocumentBuilderFactory.newInstance();
-					// final DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
-					// final org.w3c.dom.Document document = docBuilder
-					// .parse(new ByteArrayInputStream(line.getBytes(StandardCharsets.UTF_8)));
-					//
-					// final NodeList nodeList = document.getElementsByTagName("*");
-					// for (int i = 0; i < nodeList.getLength(); i++) {
-					// final Node node = nodeList.item(i);
-					// if (node.getNodeType() == Node.ELEMENT_NODE) {
-					// if (node.getNodeName().equals("doc")) {
-					// System.err.println(node);
-					// }
-					// }
-					// }
-
 					final BufferedReader br = new BufferedReader(new FileReader(pathToSubFolder));
 					String line;
 					while ((line = br.readLine()) != null) {
@@ -206,14 +190,29 @@ public class DatasetGeneratorWithCategoryTrees {
 							link = java.net.URLDecoder.decode(link);
 							link = link.replaceAll(" ", "_");
 							/**
-							 * If anchor text refer to any link in the list It is positive sample
+							 * If anchor text refer to any link in the list and anchor-text contains any
+							 * role, It is positive sample
 							 */
 							if (entity != null) {
-								final String linkText = refactor(htmlLink.getLinkText().trim(), entity);
-								if (linkText != null && !linkText.isEmpty()) {
-									DATASET.addPositiveData(entity.getCategoryFolder(), entity.getCategoryFolder() + RESULT_FILE_SEPARATOR
-											+ anchorText + RESULT_FILE_SEPARATOR + htmlLink.getFullSentence()+RESULT_FILE_SEPARATOR+link,htmlLink.getFullSentence());
+								final Matcher matcher = pattern.matcher(anchorText);
+								String fullSentence = htmlLink.getFullSentence();
+								String linktext = htmlLink.getLinkText();
+
+								if (matcher.find()) {
+									linktext = linktext.replaceAll(matcher.group(), "<r>" + matcher.group() + "</r>");
+									fullSentence = fullSentence.replaceAll(htmlLink.getLinkText(),
+											"<a>" + linktext + "</a>");
+
+									DATASET.addPositiveData(entity.getCategoryFolder(),
+											entity.getCategoryFolder() + RESULT_FILE_SEPARATOR + anchorText
+													+ RESULT_FILE_SEPARATOR + matcher.group() + RESULT_FILE_SEPARATOR
+													+ fullSentence + RESULT_FILE_SEPARATOR + link,
+											fullSentence);
+								} else {
+									// TODO:
 								}
+								// cat log/positive.log | awk -F "\t" '{print $1"\t"$4}' > log/pos.tsv
+
 							}
 							/**
 							 * It is a negative sample if contains any role and it does not have any
@@ -221,8 +220,10 @@ public class DatasetGeneratorWithCategoryTrees {
 							 */
 							else {
 								final Matcher matcher = pattern.matcher(anchorText);
-								if (matcher.find()) {									
-
+								if (matcher.find()) {
+									String fullSentence = htmlLink.getFullSentence();
+									String linktext = htmlLink.getLinkText();
+																		
 									final Set<String> categoriesOfEntity = entityToCategoryList.getEntity2categories()
 											.get(link);
 									if (categoriesOfEntity == null) {
@@ -239,12 +240,25 @@ public class DatasetGeneratorWithCategoryTrees {
 										}
 									}
 									if (negativeFlag) {
-										final Set<Category> categorySet = regexTextToCategories.get(matcher.group());
+										
+										String foundText = matcher.group();
+										linktext = linktext.replaceAll(foundText.replaceAll("\\*","\\\\*").replaceAll("\\.", "\\\\."), "<r>" + foundText + "</r>");
+										fullSentence = fullSentence.replaceAll(htmlLink.getLinkText().replaceAll("\\*","\\\\*").replaceAll("\\.", "\\\\."),
+												"<a>" + linktext + "</a>");
+										final Set<Category> categorySet = regexTextToCategories.get(foundText);
 										for (Category cat : categorySet) {
-											DATASET.addNegativeData(cat, cat + RESULT_FILE_SEPARATOR + anchorText + RESULT_FILE_SEPARATOR + matcher.group()
-													+ RESULT_FILE_SEPARATOR + htmlLink.getFullSentence()+RESULT_FILE_SEPARATOR+link,htmlLink.getFullSentence());
+											DATASET.addNegativeData(cat,
+													cat + RESULT_FILE_SEPARATOR + anchorText + RESULT_FILE_SEPARATOR
+															+ foundText + RESULT_FILE_SEPARATOR
+															+ fullSentence + RESULT_FILE_SEPARATOR + link,
+													fullSentence);
 										}
 									}
+								} else {
+									// TODO
+									// Negative sample which does not have a role and does not refer to our list
+									// DATASET.addNegativeData(null,
+									// htmlLink.getFullSentence(),htmlLink.getFullSentence());
 								}
 							}
 						}

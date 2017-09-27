@@ -106,6 +106,7 @@ public class DatasetGeneratorWithCategoryTrees {
 		entityMap = EntityFileLoader.loadData(DataSourceType.WIKIPEDIA_LIST_OF_TILTES, null);
 		entityMap.putAll(EntityFileLoader.loadData(DataSourceType.WIKIDATA_LIST_OF_PRESON, null));
 		entityMap.putAll(EntityFileLoader.loadData(DataSourceType.WIKIPEDIA_LIST_OF_PERSON_MANUAL, null));
+		entityMap.putAll(EntityFileLoader.loadData(DataSourceType.ALL, null));
 
 		System.out.println("Loading extracted roles (dictionaries)....");
 		roleProvider.loadRoles(DataSourceType.WIKIPEDIA_LIST_OF_TILTES);
@@ -242,8 +243,8 @@ public class DatasetGeneratorWithCategoryTrees {
 									if (negativeFlag) {
 										
 										String foundText = matcher.group();
-										linktext = linktext.replaceAll(foundText.replaceAll("\\*","\\\\*").replaceAll("\\.", "\\\\."), "<r>" + foundText + "</r>");
-										fullSentence = fullSentence.replaceAll(htmlLink.getLinkText().replaceAll("\\*","\\\\*").replaceAll("\\.", "\\\\."),
+										linktext = linktext.replaceAll(foundText.replaceAll("\\*","\\\\*").replaceAll("\\.", "\\\\.").replaceAll("\\(", "\\\\(").replaceAll("\\)", "\\\\)"), "<r>" + foundText + "</r>");
+										fullSentence = fullSentence.replaceAll(htmlLink.getLinkText().replaceAll("\\*","\\\\*").replaceAll("\\.", "\\\\.").replaceAll("\\(", "\\\\(").replaceAll("\\)", "\\\\)"),
 												"<a>" + linktext + "</a>");
 										final Set<Category> categorySet = regexTextToCategories.get(foundText);
 										for (Category cat : categorySet) {
@@ -257,6 +258,10 @@ public class DatasetGeneratorWithCategoryTrees {
 								} else {
 									// TODO
 									// Negative sample which does not have a role and does not refer to our list
+									//String fullSentence = htmlLink.getFullSentence();
+									//String linktext = htmlLink.getLinkText();
+									//fullSentence = fullSentence.replaceAll(htmlLink.getLinkText().replaceAll("\\*","\\\\*").replaceAll("\\.", "\\\\.").replaceAll("\\(", "\\\\(").replaceAll("\\)", "\\\\)"),
+									//		"<a>" + linktext + "</a>");
 									// DATASET.addNegativeData(null,
 									// htmlLink.getFullSentence(),htmlLink.getFullSentence());
 								}

@@ -44,7 +44,7 @@ public class EntityFileLoader {
 			dataSubFolder = ENTITY_FOLDER_NAME + File.separator + DataSourceType.WIKIPEDIA_LIST_OF_TILTES.getText();
 			break;
 		case ALL:
-			dataSubFolder = ENTITY_FOLDER_NAME + File.separator + DataSourceType.ALL.getText();
+			dataSubFolder = ENTITY_FOLDER_NAME + File.separator + "wikidataListOfMonarchs";
 			break;
 		default:
 			dataSubFolder = ENTITY_FOLDER_NAME + File.separator + "wikipedia";

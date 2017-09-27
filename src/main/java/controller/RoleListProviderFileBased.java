@@ -32,7 +32,8 @@ public class RoleListProviderFileBased extends RoleListProvider {
 	 */
 	@Override
 	public void loadRoles(DataSourceType dataSourceType) {
-		roleMap.clear();
+		//NO RESET FOR NOW
+		//roleMap.clear();
 		String dataSubFolder;
 		switch (dataSourceType) {
 		case WIKIDATA_LIST_OF_PRESON:
@@ -51,7 +52,7 @@ public class RoleListProviderFileBased extends RoleListProvider {
 			dataSubFolder = DATA_FOLDER+File.separator + DataSourceType.ALL.getText();
 			break;
 		default:
-			dataSubFolder = DATA_FOLDER+File.separator + "wikipedia";
+			dataSubFolder = DATA_FOLDER+File.separator + "wikidataListOfMonarchs";
 			break;
 		}
 		try {

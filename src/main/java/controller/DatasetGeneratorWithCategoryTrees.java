@@ -86,10 +86,10 @@ public class DatasetGeneratorWithCategoryTrees {
 	private static final TreeMap<String, Set<Category>> regexTextToCategories = new TreeMap<>(
 			String.CASE_INSENSITIVE_ORDER);
 	/**
-	 * Role provide which reads already calculated dictionary of roles from folder
-	 * "dictionary"
+	 * Reads already calculated dictionary of roles from folder "dictionary/manually
+	 * cleaned"
 	 */
-	private static final RoleListProvider roleProvider = new RoleListProviderFileBased();
+	private static final RoleListProvider dictionaries = new RoleListProviderFileBased();
 
 	public static void main(String[] args) {
 
@@ -106,16 +106,17 @@ public class DatasetGeneratorWithCategoryTrees {
 		entityMap = EntityFileLoader.loadData(DataSourceType.WIKIPEDIA_LIST_OF_TILTES, null);
 		entityMap.putAll(EntityFileLoader.loadData(DataSourceType.WIKIDATA_LIST_OF_PRESON, null));
 		entityMap.putAll(EntityFileLoader.loadData(DataSourceType.WIKIPEDIA_LIST_OF_PERSON_MANUAL, null));
+		// For now ALL means wikidataListOfMonarchs
 		entityMap.putAll(EntityFileLoader.loadData(DataSourceType.ALL, null));
 
 		System.out.println("Loading extracted roles (dictionaries)....");
-		roleProvider.loadRoles(DataSourceType.WIKIPEDIA_LIST_OF_TILTES);
-		roleProvider.loadRoles(DataSourceType.WIKIDATA_LABEL);
+		dictionaries.loadRoles(DataSourceType.WIKIPEDIA_LIST_OF_TILTES);
+		dictionaries.loadRoles(DataSourceType.WIKIDATA_LABEL);
 
 		regexPattern.append("(?im)");
 
 		boolean first = true;
-		for (final Entry<String, Set<Category>> roleEntity : roleProvider.getData().entrySet()) {
+		for (final Entry<String, Set<Category>> roleEntity : dictionaries.getData().entrySet()) {
 			final Set<Category> categories = roleEntity.getValue();
 			final String originalrole = roleEntity.getKey();
 			final String role = originalrole.replaceAll("\\.", "\\\\.");
@@ -160,9 +161,12 @@ public class DatasetGeneratorWithCategoryTrees {
 			executor.shutdown();
 			executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
 			DATASET.printPositiveDatasetStatistic();
-			DATASET.printNegativeDatasetStatistic();
 			DATASET.printPositiveDataset();
-			DATASET.printNegativeDataset();
+
+			DATASET.printNegativeDatasetStatistic();
+			DATASET.printNegativeDatasetDifficult();
+
+			DATASET.printNegativeDatasetEasy();
 		} catch (final Exception exception) {
 			exception.printStackTrace();
 		}
@@ -200,14 +204,15 @@ public class DatasetGeneratorWithCategoryTrees {
 								String linktext = htmlLink.getLinkText();
 
 								if (matcher.find()) {
-									linktext = linktext.replaceAll(matcher.group(), "<r>" + matcher.group() + "</r>");
-									fullSentence = fullSentence.replaceAll(htmlLink.getLinkText(),
+									linktext = linktext.replace(matcher.group(), "<r>" + matcher.group() + "</r>");
+									fullSentence = fullSentence.replace(htmlLink.getLinkText(),
 											"<a>" + linktext + "</a>");
 
 									DATASET.addPositiveData(entity.getCategoryFolder(),
 											entity.getCategoryFolder() + RESULT_FILE_SEPARATOR + anchorText
 													+ RESULT_FILE_SEPARATOR + matcher.group() + RESULT_FILE_SEPARATOR
-													+ fullSentence + RESULT_FILE_SEPARATOR + link,
+													+ fullSentence + RESULT_FILE_SEPARATOR + link
+													+ RESULT_FILE_SEPARATOR + htmlLink.getFullSentence(),
 											fullSentence);
 								} else {
 									// TODO:
@@ -224,7 +229,7 @@ public class DatasetGeneratorWithCategoryTrees {
 								if (matcher.find()) {
 									String fullSentence = htmlLink.getFullSentence();
 									String linktext = htmlLink.getLinkText();
-																		
+
 									final Set<String> categoriesOfEntity = entityToCategoryList.getEntity2categories()
 											.get(link);
 									if (categoriesOfEntity == null) {
@@ -241,29 +246,32 @@ public class DatasetGeneratorWithCategoryTrees {
 										}
 									}
 									if (negativeFlag) {
-										
+
 										String foundText = matcher.group();
-										linktext = linktext.replaceAll(foundText.replaceAll("\\*","\\\\*").replaceAll("\\.", "\\\\.").replaceAll("\\(", "\\\\(").replaceAll("\\)", "\\\\)"), "<r>" + foundText + "</r>");
-										fullSentence = fullSentence.replaceAll(htmlLink.getLinkText().replaceAll("\\*","\\\\*").replaceAll("\\.", "\\\\.").replaceAll("\\(", "\\\\(").replaceAll("\\)", "\\\\)"),
+										linktext = linktext.replace(foundText, "<r>" + foundText + "</r>");
+										fullSentence = fullSentence.replace(htmlLink.getLinkText(),
 												"<a>" + linktext + "</a>");
 										final Set<Category> categorySet = regexTextToCategories.get(foundText);
-										for (Category cat : categorySet) {
-											DATASET.addNegativeData(cat,
+										for (final Category cat : categorySet) {
+											DATASET.addNegativeDifficultData(cat,
 													cat + RESULT_FILE_SEPARATOR + anchorText + RESULT_FILE_SEPARATOR
-															+ foundText + RESULT_FILE_SEPARATOR
-															+ fullSentence + RESULT_FILE_SEPARATOR + link,
+															+ foundText + RESULT_FILE_SEPARATOR + fullSentence
+															+ RESULT_FILE_SEPARATOR + link + RESULT_FILE_SEPARATOR
+															+ htmlLink.getFullSentence(),
 													fullSentence);
 										}
 									}
 								} else {
-									// TODO
 									// Negative sample which does not have a role and does not refer to our list
-									//String fullSentence = htmlLink.getFullSentence();
-									//String linktext = htmlLink.getLinkText();
-									//fullSentence = fullSentence.replaceAll(htmlLink.getLinkText().replaceAll("\\*","\\\\*").replaceAll("\\.", "\\\\.").replaceAll("\\(", "\\\\(").replaceAll("\\)", "\\\\)"),
-									//		"<a>" + linktext + "</a>");
-									// DATASET.addNegativeData(null,
-									// htmlLink.getFullSentence(),htmlLink.getFullSentence());
+//									String linktext = htmlLink.getLinkText();
+//									String fullSentence = htmlLink.getFullSentence();
+//									try {
+//										fullSentence = fullSentence.replace(linktext, "<a>" + linktext + "</a>");
+//										DATASET.addNegativeEasyData(
+//												fullSentence + RESULT_FILE_SEPARATOR + htmlLink.getFullSentence());
+//									} catch (Exception e) {
+//										e.printStackTrace();
+//									}
 								}
 							}
 						}

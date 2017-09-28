@@ -111,7 +111,7 @@ public class DatasetGenerator {
 			System.err.println(TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis()-now));
 			DATASET.printPositiveDataset();
 			//LOG.info("*****************************************************");
-			DATASET.printNegativeDataset();
+			DATASET.printNegativeDatasetDifficult();
 			// DICTIONARY.printResultWithoutEntitesWithClustringCoefficient();
 			// DICTIONARY.printResult();
 		} catch (final Exception exception) {
@@ -156,7 +156,7 @@ public class DatasetGenerator {
 								final Matcher matcher = pattern.matcher(anchorText);
 								if (matcher.find()) {
 									final Set<Category> categorySet = regexTextToCategories.get(matcher.group());
-									DATASET.addNegativeData(null,categorySet+";"+matcher.group()+";"+htmlLink.getFullSentence()+";"+link,htmlLink.getFullSentence());
+									DATASET.addNegativeDifficultData(null,categorySet+";"+matcher.group()+";"+htmlLink.getFullSentence()+";"+link,htmlLink.getFullSentence());
 									break;
 								}
 							}

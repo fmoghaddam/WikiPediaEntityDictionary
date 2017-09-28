@@ -12,10 +12,12 @@ import org.apache.log4j.Logger;
 public class Dataset {
 	//private static final Logger LOG = Logger.getLogger(Dataset.class.getCanonicalName());
 	private static final Logger positiveLog = Logger.getLogger("debugLogger");
-	private static final Logger negativeLog = Logger.getLogger("reportsLogger");
+	private static final Logger negativeDifficultLog = Logger.getLogger("reportsLogger");
+	private static final Logger negativeEasyLog = Logger.getLogger("ExternalAppLogger");
 	
 	private final CopyOnWriteArrayList<String> positiveDataset = new CopyOnWriteArrayList<>();
-	private final CopyOnWriteArrayList<String> negativeDataset = new CopyOnWriteArrayList<>();
+	private final CopyOnWriteArrayList<String> negativeDatasetDifficult = new CopyOnWriteArrayList<>();
+	private final CopyOnWriteArrayList<String> negativeDatasetEasy = new CopyOnWriteArrayList<>();
 	
 	private final Map<Category,Set<String>> positiveDatasetStatistic = new HashMap<>();
 	private final Map<Category,Set<String>> negativeDatasetStatistic = new HashMap<>();
@@ -36,11 +38,11 @@ public class Dataset {
 		}
 	}
 	
-	public void addNegativeData(final Category category,final String negativeDataFull,final String negativeDataSentence){
+	public void addNegativeDifficultData(final Category category,final String negativeDataFull,final String negativeDataSentence){
 		if(negativeDataFull==null || negativeDataFull.isEmpty()){
 			throw new IllegalArgumentException("Negative data can not be null or empty");
 		}
-		negativeDataset.add(negativeDataFull);
+		negativeDatasetDifficult.add(negativeDataFull);
 		final Set<String> set = negativeDatasetStatistic.get(category);
 		if(set==null) {
 			final Set<String> newSet= new HashSet<>();
@@ -52,12 +54,23 @@ public class Dataset {
 		}
 	}
 
+	public void addNegativeEasyData(final String negativeDataFull){
+		if(negativeDataFull==null || negativeDataFull.isEmpty()){
+			throw new IllegalArgumentException("Negative data can not be null or empty");
+		}
+		negativeDatasetEasy.add(negativeDataFull);
+	}
+	
 	public CopyOnWriteArrayList<String> getPositiveDataset() {
 		return positiveDataset;
 	}
 
-	public CopyOnWriteArrayList<String> getNegativeDataset() {
-		return negativeDataset;
+	public CopyOnWriteArrayList<String> getNegativeDatasetDifficult() {
+		return negativeDatasetDifficult;
+	}
+	
+	public CopyOnWriteArrayList<String> getNegativeDatasetEasy() {
+		return negativeDatasetEasy;
 	}
 	
 	public void printPositiveDataset() {
@@ -67,10 +80,17 @@ public class Dataset {
 		}
 	}
 	
-	public void printNegativeDataset() {
-		negativeLog.info("Number of negative samples = "+negativeDataset.size());
-		for(String s:negativeDataset){
-			negativeLog.info(s);
+	public void printNegativeDatasetDifficult() {
+		negativeDifficultLog.info("Number of negative samples = "+negativeDatasetDifficult.size());
+		for(String s:negativeDatasetDifficult){
+			negativeDifficultLog.info(s);
+		}
+	}
+	
+	public void printNegativeDatasetEasy() {
+		negativeEasyLog.info("Number of negative samples = "+negativeDatasetDifficult.size());
+		for(String s:negativeDatasetEasy){
+			negativeEasyLog.info(s);
 		}
 	}
 	
@@ -82,7 +102,7 @@ public class Dataset {
 	
 	public void printNegativeDatasetStatistic() {
 		for(Entry<Category, Set<String>> s:negativeDatasetStatistic.entrySet()){
-			negativeLog.info(s.getKey()+" == "+s.getValue().size());
+			negativeDifficultLog.info(s.getKey()+" == "+s.getValue().size());
 		}
 	}
 }

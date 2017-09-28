@@ -79,7 +79,7 @@ task deployZip(dependsOn: distTar) << {
          	execute 'rm -rf ./java/WikiPediaEntityDictionary'
          	//execute 'rm ./java/WikiPediaEntityDictionary.tar'
             put from: './build/distributions/WikiPediaEntityDictionary.tar', into: './java/'
-            execute 'cd ./java && tar -xvf WikiPediaEntityDictionary.tar'            
+            execute 'cd ./java && tar -xf WikiPediaEntityDictionary.tar'            
             execute 'cd ./java && chmod +x WikiPediaEntityDictionary/bin/WikiPediaEntityDictionary'
             execute 'cd ./java/WikiPediaEntityDictionary/bin && ./WikiPediaEntityDictionary 50 /home/farshad/java/data/ /home/farshad/java/categoryData/article_categories_en.ttl'
             get from: './java/WikiPediaEntityDictionary/bin/log', into: '.'

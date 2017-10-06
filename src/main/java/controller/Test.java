@@ -1,4 +1,7 @@
 package controller;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import model.Category;
 import model.CategoryTrees;
 
@@ -20,16 +23,20 @@ public class Test {
 //		String c = "XXXX";
 //		System.err.println(AnchorTextToEntity.refactor(c, new Entity("farshad","  ","FARSHAD",null)));
 	
-		String CATEGORY_TREE_FOLDER = "categoryTree";
-		final CategoryTrees categoryTrees = new CategoryTrees();
-		categoryTrees.load(CATEGORY_TREE_FOLDER);
+//		String CATEGORY_TREE_FOLDER = "categoryTree";
+//		final CategoryTrees categoryTrees = new CategoryTrees();
+//		categoryTrees.load(CATEGORY_TREE_FOLDER);
+//		
+//		//for (String cat : categoriesOfEntity) {
+//			Category existInAnyTree = categoryTrees.existInAnyTree("Chief_executive_officers");
+//			if (existInAnyTree != null) {
+//				System.err.println(existInAnyTree);
+//			}
+//		//}
+		String text = "Lincoln's portrait appears on $5 bill two denominations of United States currency, the penny and the $5 bill.";
 		
-		//for (String cat : categoriesOfEntity) {
-			Category existInAnyTree = categoryTrees.existInAnyTree("Chief_executive_officers");
-			if (existInAnyTree != null) {
-				System.err.println(existInAnyTree);
-			}
-		//}
+		System.err.println(text.replace("$5 bill", "<a>$5 bill</a>"));
+		//System.err.println(Pattern.quote("(he*.)"));
 	}
 
 }

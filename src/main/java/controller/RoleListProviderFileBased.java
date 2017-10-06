@@ -19,7 +19,7 @@ public class RoleListProviderFileBased extends RoleListProvider {
 	 * It is used for selecting negative examples for dataset in {@link DatasetGenerator}
 	 * 
 	 */
-	private static final String DATA_FOLDER = "data/dictionary/manually cleaned";
+	private static final String DATA_FOLDER = "data/dictionary/Mary Manually cleaned";
 
 	public RoleListProviderFileBased() {
 

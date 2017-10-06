@@ -247,7 +247,7 @@ public class DatasetGeneratorWithCategoryTrees {
 									}
 									if (negativeFlag) {
 
-										String foundText = matcher.group();
+										String foundText = matcher.group(); 
 										linktext = linktext.replace(foundText, "<r>" + foundText + "</r>");
 										fullSentence = fullSentence.replace(htmlLink.getLinkText(),
 												"<a>" + linktext + "</a>");

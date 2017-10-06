@@ -1,6 +1,7 @@
 /wikipediafiles/*
 wikipediafiles.tar.gz
 /.gradle/
+/.settings/
 /bin/
 /log/
 /entities backup/

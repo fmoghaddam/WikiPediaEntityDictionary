@@ -217,8 +217,6 @@ public class DatasetGeneratorWithCategoryTrees {
 								} else {
 									// TODO:
 								}
-								// cat log/positive.log | awk -F "\t" '{print $1"\t"$4}' > log/pos.tsv
-
 							}
 							/**
 							 * It is a negative sample if contains any role and it does not have any

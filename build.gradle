@@ -10,16 +10,8 @@ apply plugin: 'application'
 repositories {
     jcenter()
 }
-//mainClassName="controller.AnchorTextToEntityGeneral"
-//mainClassName="controller.EntityToAnchorText"
-//mainClassName="controller.AnchorTextToEntity"
-////mainClassName="controller.AnchorTextToEntityWikidata"
-//mainClassName="controller.AnchorTextToEntityDatasetGenerator"
-//mainClassName="controller.AnchorTextToEntityDatasetGeneratorCategory"
-//mainClassName="controller.DictionaryGenerator"
-//mainClassName="controller.AnchorTextToEntityListOfPersons"
-mainClassName="controller.DatasetGeneratorWithCategoryTrees"
 
+mainClassName="controller.DatasetGeneratorWithCategoryTrees2ndVersion"
 
 applicationDefaultJvmArgs = ["-Xmx30g", "-d64", "-XX:+UseParallelGC", "-server"]
 

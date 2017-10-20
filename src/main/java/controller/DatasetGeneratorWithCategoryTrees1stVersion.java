@@ -26,8 +26,12 @@ import model.RoleListProvider;
 import util.CharactersUtils;
 import util.HTMLLinkExtractor;
 import util.HTMLLinkExtractor.HtmlLink;
-
-public class DatasetGeneratorWithCategoryTrees {
+/**
+ * Implementation of the work-flow at page 4 of "RoleTagger Meeting 06.10.2017" slides in google doc
+ * @author fbm
+ *
+ */
+public class DatasetGeneratorWithCategoryTrees1stVersion {
 
 	/**
 	 * Used when we add a result to a positive/negative dataset

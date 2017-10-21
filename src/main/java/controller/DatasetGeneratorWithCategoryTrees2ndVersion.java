@@ -31,7 +31,6 @@ import util.HTMLLinkExtractor.HtmlLink;
  * Generates positive, difficult negative and easy negative samples.
  * This version consider all the roles in a sentence and decide if sentence only contians negative samples 
  * or contains positive sample. We need to ignore sentences which contain both cases (e.g. Alexander Pope talked with Pope Francis)
- * More information can be found in the work-flow at page 5 of "RoleTagger Meeting 06.10.2017" slides in google doc
  * 
  * @author fbm
  *

@@ -27,7 +27,7 @@ import util.CharactersUtils;
 import util.HTMLLinkExtractor;
 import util.HTMLLinkExtractor.HtmlLink;
 /**
- * Implementation of the work-flow at page 4 of "RoleTagger Meeting 06.10.2017" slides in google doc
+ * Implementation of the work-flow at page 5 of "RoleTagger Meeting 06.10.2017" slides in google doc
  * @author fbm
  *
  */

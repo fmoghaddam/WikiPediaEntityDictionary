@@ -18,8 +18,8 @@ import model.AnchorText;
 import model.DataSourceType;
 import model.Dictionary;
 import model.Entity;
+import model.HtmlLink;
 import util.HTMLLinkExtractor;
-import util.HTMLLinkExtractor.HtmlLink;
 import util.CharactersUtils;
 
 public class AnchorTextToEntity {

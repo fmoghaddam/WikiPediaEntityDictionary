@@ -23,9 +23,9 @@ import model.CategoryTrees;
 import model.DataSourceType;
 import model.Dataset;
 import model.Entity;
+import model.HtmlLink;
 import model.RoleListProvider;
 import util.HTMLLinkExtractor;
-import util.HTMLLinkExtractor.HtmlLink;
 
 /**
  * Generates positive, difficult negative and easy negative samples.

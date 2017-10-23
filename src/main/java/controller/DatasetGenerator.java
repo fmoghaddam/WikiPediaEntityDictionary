@@ -23,10 +23,10 @@ import model.Category;
 import model.DataSourceType;
 import model.Dataset;
 import model.Entity;
+import model.HtmlLink;
 import model.RoleListProvider;
 import util.CharactersUtils;
 import util.HTMLLinkExtractor;
-import util.HTMLLinkExtractor.HtmlLink;
 
 /**
  * This class used to generate positive and negative role dataset.

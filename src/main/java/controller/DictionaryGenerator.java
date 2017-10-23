@@ -20,9 +20,9 @@ import model.Category;
 import model.DataSourceType;
 import model.Dictionary;
 import model.Entity;
+import model.HtmlLink;
 import util.CharactersUtils;
 import util.HTMLLinkExtractor;
-import util.HTMLLinkExtractor.HtmlLink;
 
 /**
  * This class is responsible for generating Role dictionary by considering all

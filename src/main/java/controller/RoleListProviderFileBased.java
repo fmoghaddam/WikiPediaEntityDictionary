@@ -63,13 +63,24 @@ public class RoleListProviderFileBased extends RoleListProvider {
 				String line;
 				while ((line = br.readLine()) != null) {
 					final Set<Category> categorySet = roleMap.get(line);
+					final Category cat = Category.resolve(file);
 					if (categorySet == null || categorySet.isEmpty()) {
 						final Set<Category> catSet = new HashSet<>();
-						catSet.add(Category.resolve(file));
+						catSet.add(cat);
 						roleMap.put(line, catSet);
 					} else {
-						categorySet.add(Category.resolve(file));
+						categorySet.add(cat);
 						roleMap.put(line, categorySet);
+					}
+					
+					final Set<String> set = inverseRoleMap.get(cat);
+					if(set==null || set.isEmpty()) {
+						final Set<String> s = new HashSet<>();
+						s.add(line);
+						inverseRoleMap.put(cat,s);
+					}else {
+						set.add(line);
+						inverseRoleMap.put(cat,set);
 					}
 				}
 				br.close();

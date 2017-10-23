@@ -19,9 +19,9 @@ import model.AnchorText;
 import model.DataSourceType;
 import model.Dictionary;
 import model.Entity;
+import model.HtmlLink;
 import util.CharactersUtils;
 import util.HTMLLinkExtractor;
-import util.HTMLLinkExtractor.HtmlLink;
 
 public class AnchorTextToEntityWikidata {
 

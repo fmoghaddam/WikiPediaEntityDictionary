@@ -11,7 +11,7 @@ repositories {
     jcenter()
 }
 
-mainClassName="controller.DatasetGeneratorWithCategoryTrees2ndVersion"
+mainClassName="controller.DatasetGeneratorWithCategoryTrees3rdVersion"
 
 applicationDefaultJvmArgs = ["-Xmx30g", "-d64", "-XX:+UseParallelGC", "-server"]
 

@@ -22,10 +22,10 @@ import model.CategoryTrees;
 import model.DataSourceType;
 import model.Dataset;
 import model.Entity;
+import model.HtmlLink;
 import model.RoleListProvider;
 import util.CharactersUtils;
 import util.HTMLLinkExtractor;
-import util.HTMLLinkExtractor.HtmlLink;
 /**
  * Implementation of the work-flow at page 5 of "RoleTagger Meeting 06.10.2017" slides in google doc
  * @author fbm

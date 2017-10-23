@@ -14,6 +14,7 @@ import util.MapUtil;
 public abstract class RoleListProvider {
 	private static Logger LOG = Logger.getLogger(RoleListProvider.class);
 	protected Map<String, Set<Category>> roleMap = new LinkedHashMap<>();
+	protected Map<Category, Set<String>> inverseRoleMap = new LinkedHashMap<>();
 
 	/**
 	 * This function should first load the roles into the map, then sort the map
@@ -32,6 +33,10 @@ public abstract class RoleListProvider {
 	public Map<String, Set<Category>> getData() {
 		return roleMap;
 	}
+	
+	public Map<Category, Set<String>> getInverseData() {
+		return inverseRoleMap;
+	}
 
 	protected void sortBasedOnLenghth(Order order) {
 		switch (order) {
@@ -42,7 +47,7 @@ public abstract class RoleListProvider {
 			roleMap = MapUtil.sortByKeyDescending(roleMap);
 			break;
 		default:
-			break;
+			throw new IllegalArgumentException(order + " is undefined");
 		}
 	}
 }

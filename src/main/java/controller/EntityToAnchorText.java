@@ -22,8 +22,8 @@ import org.apache.log4j.Logger;
 import model.Category;
 import model.DataSourceType;
 import model.Entity;
+import model.HtmlLink;
 import util.HTMLLinkExtractor;
-import util.HTMLLinkExtractor.HtmlLink;
 
 public class EntityToAnchorText {
 

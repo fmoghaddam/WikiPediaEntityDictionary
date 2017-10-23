@@ -16,8 +16,8 @@ import org.apache.log4j.Logger;
 import model.AnchorText;
 import model.Dictionary;
 import model.Entity;
+import model.HtmlLink;
 import util.HTMLLinkExtractor;
-import util.HTMLLinkExtractor.HtmlLink;
 
 /**
  * This class extract ALL the anchor text and aggregate them

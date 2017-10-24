@@ -14,6 +14,8 @@ import java.util.Set;
 import edu.stanford.nlp.ling.Word;
 import edu.stanford.nlp.process.PTBTokenizer;
 import edu.stanford.nlp.process.TokenizerFactory;
+import model.DataSourceType;
+import model.RoleListProvider;
 
 /**
  * This class convert dataset files to structure which Stanford NER can read for custom NER training
@@ -30,10 +32,25 @@ public class TrainCustomNER {
 		final List<String> negativeLines = Files.readAllLines(Paths.get(NEGATIVE_DATA), StandardCharsets.UTF_8);
 
 		final TrainTestData positiveTTD = sampleData(positiveLines,TEST_TRAIN_PERCENTAGE);
+		//Adding dictionary elements which have more than one words to train data
+		addDictionaryToPositiveDataset(positiveTTD);
 		final TrainTestData negativeTTD = sampleData(negativeLines,TEST_TRAIN_PERCENTAGE);
-		
+
 		writeDataToFile(positiveTTD.getTrainSet(), negativeTTD.getTrainSet(),"train.tsv");
 		writeDataToFile(positiveTTD.getTestSet(), negativeTTD.getTestSet(),"test.tsv");
+	}
+
+	private static void addDictionaryToPositiveDataset(TrainTestData positiveTTD) {
+		final RoleListProvider dictionaries = new RoleListProviderFileBased();
+		dictionaries.loadRoles(DataSourceType.WIKIPEDIA_LIST_OF_TILTES);
+		dictionaries.loadRoles(DataSourceType.WIKIDATA_LABEL);
+		final List<String> dicList = new ArrayList<>();
+		for (final String role: dictionaries.getData().keySet()) {
+			if(role.split(" ").length>1) {
+				dicList.add("X\tX\tX\t"+role);
+			}
+		}
+		positiveTTD.getTrainSet().addAll(dicList);
 	}
 
 	private static void writeDataToFile(List<String> positiveTrainSet, List<String> negativeTrainSet, String fileName) {
@@ -44,33 +61,60 @@ public class TrainCustomNER {
 			final String[] split = line.split("\t");
 			String data = split[3];
 
-			data = data.replaceAll("<.?r>", "");
-			final List<Word> tokens_words = tf.getTokenizer(new StringReader(data)).tokenize();
+			if(data.contains("<a>")) {
+				data = data.replaceAll("<.?r>", "");
+				final List<Word> tokens_words = tf.getTokenizer(new StringReader(data)).tokenize();
 
-			boolean inside = false;
-			for (Word w : tokens_words) {
-				if (!inside) {
-					if (w.value().equals("<a>")) {
-						inside = true;
-						continue;
-					} else if (w.value().equals("</a>")) {
-						continue;
+				boolean inside = false;
+				for (Word w : tokens_words) {
+					if (!inside) {
+						if (w.value().equals("<a>")) {
+							inside = true;
+							continue;
+						} else if (w.value().equals("</a>")) {
+							continue;
+						} else {
+							positiveResult.add(new Tuple(w.value(), "O"));
+						}
 					} else {
-						positiveResult.add(new Tuple(w.value(), "O"));
-					}
-				} else {
-					if (w.value().equals("</a>")) {
-						inside = false;
-						continue;
-					} else {
-						positiveResult.add(new Tuple(w.value(), "ROLE"));
+						if (w.value().equals("</a>")) {
+							inside = false;
+							continue;
+						} else {
+							positiveResult.add(new Tuple(w.value(), "ROLE"));
+						}
 					}
 				}
+				final Tuple tuple = new Tuple("", "");
+				positiveResult.add(tuple);	
+			}else {
+				final List<Word> tokens_words = tf.getTokenizer(new StringReader(data)).tokenize();
+
+				boolean inside = false;
+				for (Word w : tokens_words) {
+					if (!inside) {
+						if (w.value().equals("<r>")) {
+							inside = true;
+							continue;
+						} else if (w.value().equals("</r>")) {
+							continue;
+						} else {
+							positiveResult.add(new Tuple(w.value(), "O"));
+						}
+					} else {
+						if (w.value().equals("</r>")) {
+							inside = false;
+							continue;
+						} else {
+							positiveResult.add(new Tuple(w.value(), "ROLE"));
+						}
+					}
+				}
+				final Tuple tuple = new Tuple("", "");
+				positiveResult.add(tuple);
 			}
-			final Tuple tuple = new Tuple("", "");
-			positiveResult.add(tuple);			
 		}
-		
+
 		final List<Tuple> negativeResult = new ArrayList<>();
 		for (int i = 5; i < negativeTrainSet.size(); i++) {
 			final String line = negativeTrainSet.get(i);
@@ -115,17 +159,17 @@ public class TrainCustomNER {
 		}
 		final List<String> train = new ArrayList<>();
 		final List<String> test = new ArrayList<>();
-		
+
 		for(int i:indexes) {
 			train.add(lines.get(i));
 		}
-		
+
 		for(int i=0;i<total;i++) {
 			if(!indexes.contains(i)) {
 				test.add(lines.get(i));
 			}
 		}
-		
+
 		return new TrainTestData(train, test);
 	}
 

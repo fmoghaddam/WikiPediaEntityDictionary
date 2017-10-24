@@ -15,9 +15,11 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.Vector;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -32,6 +34,7 @@ import model.Entity;
 import model.HtmlLink;
 import model.RoleListProvider;
 import util.HTMLLinkExtractorWithoutSentensizer;
+import util.MapUtil;
 
 /**
  * Generates positive, difficult negative and easy negative samples. This
@@ -108,6 +111,10 @@ public class DatasetGeneratorWithCategoryTrees3rdVersion {
 	 */
 	private static final RoleListProvider dictionaries = new RoleListProviderFileBased();
 
+	private static final Map<String,Integer> usedEntityFromDictionary  = new ConcurrentHashMap<>();
+			
+	private static final Logger LOG = Logger.getLogger(DatasetGeneratorWithCategoryTrees3rdVersion.class.getSimpleName());
+	
 	public static void main(String[] args) {
 
 		NUMBER_OF_THREADS = Integer.parseInt(args[0]);
@@ -214,10 +221,9 @@ public class DatasetGeneratorWithCategoryTrees3rdVersion {
 			final Set<Category> categories = roleEntity.getValue();
 			final String originalrole = roleEntity.getKey();
 			final String role = originalrole.replaceAll("\\.", "\\\\.");
-			if (role.charAt(0) == '<' && role.charAt(role.length() - 1) == '>') {
+			if (role.charAt(0) == '<' && role.charAt(role.length() - 1) == '>') {				
 				continue;
 			}
-
 			if (first) {
 				first = false;
 				regexPattern.append("(\\b").append(role).append("\\b)");
@@ -267,8 +273,21 @@ public class DatasetGeneratorWithCategoryTrees3rdVersion {
 
 			DATASET.printNegativeDatasetEasy();
 
+			printDictionaryUsageStatisitcs();
 		} catch (final Exception exception) {
 			exception.printStackTrace();
+		}
+	}
+
+	private static void printDictionaryUsageStatisitcs() {
+		System.err.println("TOTAL DIC SIZE = "+dictionaries.getData().size());
+		System.err.println("USED ENTITIES FROM DIC = "+usedEntityFromDictionary.size());
+		System.err.println("PERCENTAGE = "+(usedEntityFromDictionary.size()*100.)/(dictionaries.getData().size()));
+		
+		final Map<String, Integer> sortByValueDescending = MapUtil.sortByValueDescending(usedEntityFromDictionary);
+		for(Entry<String, Integer> e:sortByValueDescending.entrySet()) {
+			LOG.info(e.getKey() + "\t"+e.getValue());
+			System.err.println(e.getKey() + "\t"+e.getValue());
 		}
 	}
 
@@ -332,6 +351,7 @@ public class DatasetGeneratorWithCategoryTrees3rdVersion {
 
 		if (matcher.find()) {
 			String foundText = matcher.group();
+			handleDictionaryMap(foundText);
 			fullSentence = fullSentence.replace(foundText, "<r>" + foundText + "</r>");
 
 			DATASET.addPositiveData(entity.getCategoryFolder(),
@@ -340,6 +360,19 @@ public class DatasetGeneratorWithCategoryTrees3rdVersion {
 					+ fullSentence + RESULT_FILE_SEPARATOR + entity.getUri()
 					+ RESULT_FILE_SEPARATOR + originalFullSentence,
 					originalFullSentence);
+		}
+	}
+
+	/**
+	 * Count number of time an element from dictioanry has been used
+	 * @param foundText
+	 */
+	private static void handleDictionaryMap(String foundText) {
+		final Integer integer = usedEntityFromDictionary.get(foundText);
+		if(integer == null) {
+			usedEntityFromDictionary.put(foundText, 1);
+		}else {
+			usedEntityFromDictionary.put(foundText, integer+1);
 		}
 	}
 
@@ -387,7 +420,7 @@ public class DatasetGeneratorWithCategoryTrees3rdVersion {
 				String linktext1 = htmlLink.getLinkText();
 
 				if (matcher1.find()) {
-
+					handleDictionaryMap(matcher1.group());
 					linktext1 = linktext1.replace(matcher1.group(), "<r>" + matcher1.group() + "</r>");
 					fullSentence1 = fullSentence1.replace(htmlLink.getLinkText(),
 							"<a>" + linktext1 + "</a>");
@@ -446,15 +479,15 @@ public class DatasetGeneratorWithCategoryTrees3rdVersion {
 					}
 				} else {
 					//Negative sample which does not have a role and does not refer to our list
-					String linktext = htmlLink.getLinkText();
-					String fullSentence = htmlLink.getFullSentence();
-					try {
-						fullSentence = fullSentence.replace(linktext, "<a>" + linktext + "</a>");
-						DATASET.addNegativeEasyData(
-								fullSentence + RESULT_FILE_SEPARATOR + htmlLink.getFullSentence());
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
+//					String linktext = htmlLink.getLinkText();
+//					String fullSentence = htmlLink.getFullSentence();
+//					try {
+//						fullSentence = fullSentence.replace(linktext, "<a>" + linktext + "</a>");
+//						DATASET.addNegativeEasyData(
+//								fullSentence + RESULT_FILE_SEPARATOR + htmlLink.getFullSentence());
+//					} catch (Exception e) {
+//						e.printStackTrace();
+//					}
 				}
 			}
 		}

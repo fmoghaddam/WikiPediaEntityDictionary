@@ -499,8 +499,10 @@ public class DatasetGeneratorWithCategoryTrees3rdVersion {
 				DATASET.addNegativeDatasetDifficult(localDataset);
 			}
 		} else if (decisionCase.size() == 2) {
+			// Means sentence contain positive and negative roles
 			// Ignore
 		} else {
+			// Means sentence contain positive and negative roles
 			// Ignore
 		}
 	}	

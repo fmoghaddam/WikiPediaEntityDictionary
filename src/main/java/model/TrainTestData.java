@@ -1,7 +1,12 @@
-package controller;
+package model;
 
 import java.util.List;
 
+/**
+ * POJO to keep train and test dataset
+ * @author fbm
+ *
+ */
 public class TrainTestData {
 	private final List<String> trainSet;
 	private final List<String> testSet;

@@ -16,6 +16,7 @@ import edu.stanford.nlp.process.PTBTokenizer;
 import edu.stanford.nlp.process.TokenizerFactory;
 import model.DataSourceType;
 import model.RoleListProvider;
+import model.TrainTestData;
 
 /**
  * This class convert dataset files to structure which Stanford NER can read for custom NER training
@@ -33,7 +34,8 @@ public class TrainCustomNER {
 
 		final TrainTestData positiveTTD = sampleData(positiveLines,TEST_TRAIN_PERCENTAGE);
 		//Adding dictionary elements which have more than one words to train data
-		addDictionaryToPositiveDataset(positiveTTD);
+		//addDictionaryToPositiveDataset(positiveTTD);
+		
 		final TrainTestData negativeTTD = sampleData(negativeLines,TEST_TRAIN_PERCENTAGE);
 
 		writeDataToFile(positiveTTD.getTrainSet(), negativeTTD.getTrainSet(),"train.tsv");

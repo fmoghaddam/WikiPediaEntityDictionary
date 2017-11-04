@@ -28,7 +28,10 @@ public class CustomNERTagger {
 	static {
 		props = new Properties();
 		props.put("annotators", "tokenize, ssplit, pos, lemma, ner");
-		props.put("ner.model","/home/fbm/Desktop/Stanford Custome NER/farshad-model-goooood.ser.gz");
+		//props.put("ner.model","/home/fbm/Desktop/Stanford Custome NER/farshad-model-goooood.ser.gz");
+		//props.put("ner.model","/home/fbm/Desktop/Stanford Custome NER/farshad-gazetter-model.ser.gz");
+		props.put("ner.model","/home/fbm/Desktop/Stanford Custome NER/farshad-onlyRole-model.ser.gz");
+		
 		pipeline = new StanfordCoreNLP(props);
 	}
 

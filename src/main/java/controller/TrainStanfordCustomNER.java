@@ -16,6 +16,7 @@ import edu.stanford.nlp.process.TokenizerFactory;
 import model.DataSourceType;
 import model.RoleListProvider;
 import model.TrainTestData;
+import model.Tuple;
 import util.FileUtil;
 
 /**
@@ -23,8 +24,9 @@ import util.FileUtil;
  * @author fbm
  *
  */
-public class TrainCustomNER {
+public class TrainStanfordCustomNER {
 
+	private static final String SPLITTER = "\t";
 	private static final String POSITIVE_DATA = "./result/23.10.2017/positive.log";
 	private static final String NEGATIVE_DATA = "./result/23.10.2017/negativeDifficult.log";
 	private static final float TEST_PERCENTAGE = 0.1f;
@@ -76,7 +78,7 @@ public class TrainCustomNER {
 		final List<Tuple> positiveResult = new ArrayList<>();
 		for (int i = 5; i < positiveTrainSet.size(); i++) {
 			final String line = positiveTrainSet.get(i);
-			final String[] split = line.split("\t");
+			final String[] split = line.split(SPLITTER);
 			String data = split[3];
 
 			if(data.contains("<a>")) {
@@ -111,7 +113,7 @@ public class TrainCustomNER {
 		final List<Tuple> negativeResult = new ArrayList<>();
 		for (int i = 5; i < negativeTrainSet.size(); i++) {
 			final String line = negativeTrainSet.get(i);
-			final String[] split = line.split("\t");
+			final String[] split = line.split(SPLITTER);
 			String data = split[3];
 
 			data = data.replaceAll("<.?r>", "");
@@ -140,7 +142,7 @@ public class TrainCustomNER {
 			negativeResult.add(tuple);			
 		}
 		positiveResult.addAll(negativeResult);
-		FileUtil.writeToFile(positiveResult, fileName);
+		FileUtil.writeToFile(positiveResult, fileName,SPLITTER);
 	}
 
 	private static void writeDataToFileAnchorText(List<String> positiveTrainSet, List<String> negativeTrainSet, String fileName) {
@@ -148,7 +150,7 @@ public class TrainCustomNER {
 		final List<Tuple> positiveResult = new ArrayList<>();
 		for (int i = 5; i < positiveTrainSet.size(); i++) {
 			final String line = positiveTrainSet.get(i);
-			final String[] split = line.split("\t");
+			final String[] split = line.split(SPLITTER);
 			String data = split[3];
 
 			if(data.contains("<a>")) {
@@ -208,7 +210,7 @@ public class TrainCustomNER {
 		final List<Tuple> negativeResult = new ArrayList<>();
 		for (int i = 5; i < negativeTrainSet.size(); i++) {
 			final String line = negativeTrainSet.get(i);
-			final String[] split = line.split("\t");
+			final String[] split = line.split(SPLITTER);
 			String data = split[3];
 
 			data = data.replaceAll("<.?r>", "");
@@ -237,7 +239,7 @@ public class TrainCustomNER {
 			negativeResult.add(tuple);			
 		}
 		positiveResult.addAll(negativeResult);
-		FileUtil.writeToFile(positiveResult,fileName);
+		FileUtil.writeToFile(positiveResult,fileName,SPLITTER);
 	}
 
 	private static TrainTestData sampleData(List<String> lines, double threshold) {
@@ -262,21 +264,4 @@ public class TrainCustomNER {
 
 		return new TrainTestData(train, test);
 	}
-
-	public static class Tuple {
-		public String a;
-		public String b;
-
-		public Tuple(String w, String b) {
-			this.a = w;
-			this.b = b;
-		}
-
-		@Override
-		public String toString() {
-			return "Tuple [a=" + a + ", b=" + b + "]";
-		}
-
-	}
-
 }

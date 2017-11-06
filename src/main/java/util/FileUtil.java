@@ -8,7 +8,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
-import controller.TrainCustomNER.Tuple;
+import model.Tuple;
 
 public class FileUtil {
 	public static void writeDataToFile(List<String> data,final String fileName) {
@@ -20,11 +20,11 @@ public class FileUtil {
 		}
 	}
 	
-	public static void writeToFile(List<Tuple> result, String filename) {
+	public static void writeToFile(List<Tuple> result, String filename,String Splitter) {
 		try {
 			final FileWriter fw = new FileWriter(filename, true); // the true will append the new data
 			for (Tuple t : result) {
-				fw.write(t.a + "\t" + t.b+"\n");// appends the string to the file
+				fw.write(t.a + Splitter + t.b+"\n");// appends the string to the file
 			}
 			fw.close();
 		} catch (IOException ioe) {

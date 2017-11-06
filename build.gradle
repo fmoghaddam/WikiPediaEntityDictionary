@@ -11,7 +11,7 @@ repositories {
     jcenter()
 }
 
-mainClassName="controller.DatasetGeneratorWithCategoryTrees3rdVersion"
+mainClassName="controller.DatasetGeneratorWithCategoryTrees4thVersion"
 
 applicationDefaultJvmArgs = ["-Xmx30g", "-d64", "-XX:+UseParallelGC", "-server"]
 
@@ -29,6 +29,18 @@ dependencies
 
 applicationDistribution.from("data") {
     into "bin/data"
+}
+
+applicationDistribution.from("CRF") {
+    into "bin/CRF"
+}
+
+applicationDistribution.from("result/23.10.2017") {
+    into "bin/result/23.10.2017"
+}
+
+applicationDistribution.from("result/06.11.2017") {
+    into "bin/result/06.11.2017"
 }
 
 ssh.settings {

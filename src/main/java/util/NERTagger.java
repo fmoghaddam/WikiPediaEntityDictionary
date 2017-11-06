@@ -28,6 +28,7 @@ public class NERTagger {
 	static {
 		props = new Properties();
 		props.put("annotators", "tokenize, ssplit, pos, lemma, ner");
+		//props.put("tokenize.options", "splitHyphenated=true");
 		pipeline = new StanfordCoreNLP(props);
 	}
 

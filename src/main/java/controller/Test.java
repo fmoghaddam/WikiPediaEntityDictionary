@@ -1,19 +1,12 @@
 package controller;
-import java.awt.image.TileObserver;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.ArrayList;
+import java.io.StringReader;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-import org.apache.commons.lang3.StringUtils;
-
-import model.Category;
-import model.CategoryTrees;
-import model.Document;
+import edu.stanford.nlp.ling.Word;
+import edu.stanford.nlp.process.PTBTokenizer;
+import edu.stanford.nlp.process.TokenizerFactory;
+import util.NERTagger;
 
 public class Test {
 
@@ -56,10 +49,10 @@ public class Test {
 ////			}
 //			
 			//String text = new String(Files.readAllBytes(Paths.get("wikipediafiles/AA/wiki_00")), StandardCharsets.UTF_8);
-			List<Document>  documents = DatasetGeneratorWithCategoryTrees3rdVersion.getDocuments("wikipediafiles/AA/wiki_00");
-			for(Document d:documents) {
-				System.err.println(d.getTitle());
-			}
+//			List<Document>  documents = DatasetGeneratorWithCategoryTrees3rdVersion.getDocuments("wikipediafiles/AA/wiki_00");
+//			for(Document d:documents) {
+//				System.err.println(d.getTitle());
+//			}
 			
 //			
 //			final Pattern titlePattern = Pattern.compile("<doc.* url=\".*\" title=\".*\">");
@@ -89,6 +82,14 @@ public class Test {
 //		}
 		
 		
+//		final TokenizerFactory<Word> tf = PTBTokenizer.factory();
+//		final List<Word> tokens_words = tf.getTokenizer(new StringReader("His children, including eight-year-old Thomas, the future president's father, witnessed the attack.")).tokenize();
+//		for (Word w : tokens_words) {
+//			System.err.println(w);
+//		}
+		
+		System.err.println(NERTagger.runTaggerXML("Charlemagne then reconsidered the matter, and in 813, crowned his youngest son, Louis, <r>co-emperor</r> and co-King of the Franks, granting him a half-share of the empire and the rest upon Charlemagne's own death."));
+		//But Albert, who was sympathetic to the demands of Martin Luther, rebelled against the Catholic Church and the Holy Roman Empire by converting the Teutonic state into a Protestant and hereditary
 	}
 
 	

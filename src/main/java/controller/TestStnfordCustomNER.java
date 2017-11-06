@@ -9,14 +9,14 @@ import java.util.List;
 import util.CustomNERTagger;
 
 /**
- * Run our external test data (currently from newyork time) 
+ * Run our external test data (currently from new york times) 
  * and report accuracy
  * @author fbm
  *
  */
-public class TestCustomNER {
-	private static final String POSITIVE_DATA = "/home/fbm/eclipse-workspace/General Data/RoleTaggerGroundTruth-master/Roles/test/test108/positive";
-	private static final String NEGATIVE_DATA = "/home/fbm/eclipse-workspace/General Data/RoleTaggerGroundTruth-master/Roles/test/test108/negative";
+public class TestStnfordCustomNER {
+	private static final String POSITIVE_DATA = "/home/fbm/eclipse-workspace/General Data/RoleTaggerGroundTruth-master/Roles/test/test30/positive";
+	private static final String NEGATIVE_DATA = "/home/fbm/eclipse-workspace/General Data/RoleTaggerGroundTruth-master/Roles/test/test30/negative";
 
 	public static void main(String[] args) throws IOException {
 		File[] listOfFiles = new File(POSITIVE_DATA).listFiles();
@@ -44,9 +44,9 @@ public class TestCustomNER {
 			for(String negLine:negativeLines) {
 				String result = CustomNERTagger.runTaggerString(negLine);
 				if(result.contains("<ROLE>")) {
-					tp++;
+					fp++;
 				}else {
-					fn++;
+					tn++;
 				}
 			}
 		}

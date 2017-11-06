@@ -15,8 +15,8 @@ import java.util.Set;
 
 public class DatasetUniqefier {
 	
-	private static final String POSITIVE_DATA = "./result/23.10.2017/positive.log";
-	private static final String NEGATIVE_DATA = "./result/23.10.2017/negativeDifficult.log";
+	private static final String POSITIVE_DATA = "./result/06.11.2017/positive.log";
+	private static final String NEGATIVE_DATA = "./result/06.11.2017/negativeDifficult.log";
 	
 	private static final Map<String,Set<String>> positiveMap = new HashMap<>();
 	private static final Map<String,Set<String>> negativeMap = new HashMap<>();
@@ -43,7 +43,7 @@ public class DatasetUniqefier {
 			}
 		}
 		
-		writeDataToFile(positiveMap,"positiveUniq.txt");
+		writeDataToFile(positiveMap,"./result/06.11.2017/positiveUniq.txt");
 		
 		for (int i = 5; i < negativeLines.size(); i++) {
 			final String negLine = negativeLines.get(i);
@@ -63,7 +63,7 @@ public class DatasetUniqefier {
 			}
 		}
 		
-		writeDataToFile(negativeMap,"negativeUniq.txt");
+		writeDataToFile(negativeMap,"./result/06.11.2017/negativeUniq.txt");
 	}
 
 	private static void writeDataToFile(Map<String, Set<String>> data,final String fileName) {

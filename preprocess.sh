@@ -33,3 +33,8 @@ grep -E 'CHAIR_PERSON_TAG' log/15000Neg.tsv | head -125 >> log/500FinalNeg.tsv
 
 cat log/500FinalPos.tsv | awk -F "\t" '{print $2}' > log/500FinalPos
 cat log/500FinalNeg.tsv | awk -F "\t" '{print $2}' > log/500FinalNeg
+
+
+
+
+cat pos5LengthLessThan1500.tsv | awk -F "\t" {'print $2'} | tr -d '[:punct:]' | tr '[:upper:]' '[:lower:]' | sort | uniq | wc -l

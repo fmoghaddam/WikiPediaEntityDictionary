@@ -11,7 +11,7 @@ repositories {
     jcenter()
 }
 
-mainClassName="controller.DatasetGeneratorWithCategoryTrees4thVersion"
+mainClassName="controller.TrainMalletCustomCRFVersion2"
 
 applicationDefaultJvmArgs = ["-Xmx30g", "-d64", "-XX:+UseParallelGC", "-server"]
 
@@ -25,6 +25,9 @@ dependencies
     compile group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.24'
 	compile group: 'commons-io', name: 'commons-io', version: '2.5'
 	compile group: 'org.jsoup', name: 'jsoup', version: '1.10.3'
+	
+	compile group: 'org.apache.commons', name: 'commons-compress', version: '1.15'
+	
 }
 
 applicationDistribution.from("data") {
@@ -41,6 +44,10 @@ applicationDistribution.from("result/23.10.2017") {
 
 applicationDistribution.from("result/06.11.2017") {
     into "bin/result/06.11.2017"
+}
+
+applicationDistribution.from("result/06.11.2017-2") {
+    into "bin/result/06.11.2017-2"
 }
 
 ssh.settings {
@@ -79,7 +86,7 @@ task deploy(dependsOn: installDist) << {
 
 task deployZip(dependsOn: distTar) << {
     ssh.run {
-        session(remotes.server) {
+        session(remotes.server) {        
          	execute 'rm -rf ./java/WikiPediaEntityDictionary'
          	//execute 'rm ./java/WikiPediaEntityDictionary.tar'
             put from: './build/distributions/WikiPediaEntityDictionary.tar', into: './java/'

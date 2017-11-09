@@ -227,7 +227,7 @@ public class TrainMalletCustomCRFVersion2 {
 	}
 
 	private static void generateFullDataset(TrainTestData positiveTTD, TrainTestData negativeTTD) {
-		for (int i = 5; i < positiveTTD.getTrainSet().size(); i++) {
+		for (int i = 2; i < positiveTTD.getTrainSet().size(); i++) {
 			final String line = positiveTTD.getTrainSet().get(i);
 			final String taggedLine = line;
 			final String noTaggedLine = taggedLine.replaceAll("<.?r>", "").replaceAll("<.?a>","");
@@ -257,12 +257,10 @@ public class TrainMalletCustomCRFVersion2 {
 			FileUtil.writeDataToFile(finalResult, "CRF/"+(i-4)+"Positive.txt");
 		}
 
-		for (int i = 5; i < negativeTTD.getTrainSet().size(); i++) {
+		for (int i = 2; i < negativeTTD.getTrainSet().size(); i++) {
 			final String line = negativeTTD.getTrainSet().get(i);
-			final String[] split = line.split("\t");
-			final String tag = split[0];
-			final String taggedLine = split[3];
-			final String noTaggedLine = split[5];
+			final String taggedLine = line;
+			final String noTaggedLine = taggedLine.replaceAll("<.?r>", "").replaceAll("<.?a>","");
 			final Map<Integer, Map<String, String>> result = nerXmlParser(NERTagger.runTaggerXML(noTaggedLine));
 
 			addContextFeatures(result, 2);
@@ -270,7 +268,6 @@ public class TrainMalletCustomCRFVersion2 {
 			addNegativeLabels(result);
 
 			List<String> finalResult = new ArrayList<>();
-			finalResult.add(tag);
 			finalResult.add(taggedLine);
 			finalResult.add(noTaggedLine);
 
@@ -354,6 +351,11 @@ public class TrainMalletCustomCRFVersion2 {
 		}
 	}
 
+	/**
+	 * 
+	 * @param result
+	 * @param windowSize how many words consider before and after main word
+	 */
 	private static void addContextFeatures(Map<Integer, Map<String, String>> result, int windowSize) {
 		for (final Entry<Integer, Map<String, String>> entity : result.entrySet()) {
 			final Integer wordPosition = entity.getKey();

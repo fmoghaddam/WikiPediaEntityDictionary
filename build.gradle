@@ -11,7 +11,7 @@ repositories {
     jcenter()
 }
 
-mainClassName="controller.TrainMalletCustomCRFVersion2"
+mainClassName="controller.TrainCRFSuiteCustomCRF"
 
 applicationDefaultJvmArgs = ["-Xmx30g", "-d64", "-XX:+UseParallelGC", "-server"]
 
@@ -27,6 +27,8 @@ dependencies
 	compile group: 'org.jsoup', name: 'jsoup', version: '1.10.3'
 	
 	compile group: 'org.apache.commons', name: 'commons-compress', version: '1.15'
+	compile group: 'org.apache.opennlp', name: 'opennlp-tools', version: '1.8.3'
+	
 	
 }
 
@@ -38,13 +40,13 @@ applicationDistribution.from("CRF") {
     into "bin/CRF"
 }
 
-applicationDistribution.from("result/23.10.2017") {
-    into "bin/result/23.10.2017"
-}
+//applicationDistribution.from("result/23.10.2017") {
+//    into "bin/result/23.10.2017"
+//}
 
-applicationDistribution.from("result/06.11.2017") {
-    into "bin/result/06.11.2017"
-}
+//applicationDistribution.from("result/06.11.2017") {
+//    into "bin/result/06.11.2017"
+//}
 
 applicationDistribution.from("result/06.11.2017-2") {
     into "bin/result/06.11.2017-2"

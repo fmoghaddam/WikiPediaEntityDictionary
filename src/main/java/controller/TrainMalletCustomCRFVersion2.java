@@ -13,10 +13,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -38,6 +42,8 @@ import util.NERTagger;
  */
 public class TrainMalletCustomCRFVersion2 {
 
+	private static final int CHUNKING_SIZE = 2000;
+	private static int NUMBER_OF_THREADS = 2;
 	private static final String READ_SPLITTER = "\t";
 	private static final String WRITE_SPLITTER = " ";
 	private static final String POSITIVE_DATA = "./result/06.11.2017-2/positive.log";
@@ -45,6 +51,9 @@ public class TrainMalletCustomCRFVersion2 {
 	private static final float TEST_PERCENTAGE = 0.0f;
 
 	public static void main(String[] args) throws IOException {
+		
+		NUMBER_OF_THREADS = Integer.parseInt(args[0]);
+		
 		final List<String> positiveLines = Files.readAllLines(Paths.get(POSITIVE_DATA), StandardCharsets.UTF_8);
 		final List<String> negativeLines = Files.readAllLines(Paths.get(NEGATIVE_DATA), StandardCharsets.UTF_8);
 
@@ -227,62 +236,141 @@ public class TrainMalletCustomCRFVersion2 {
 	}
 
 	private static void generateFullDataset(TrainTestData positiveTTD, TrainTestData negativeTTD) {
-		for (int i = 2; i < positiveTTD.getTrainSet().size(); i++) {
-			final String line = positiveTTD.getTrainSet().get(i);
-			final String taggedLine = line;
-			final String noTaggedLine = taggedLine.replaceAll("<.?r>", "").replaceAll("<.?a>","");
-			final Map<Integer, Map<String, String>> result = nerXmlParser(NERTagger.runTaggerXML(noTaggedLine));
-			addContextFeatures(result, 2);
-
-			try{
-				addPositivLabels(result, taggedLine, noTaggedLine);
-			}catch(Exception e) {
-				continue;
+		try {
+			final ExecutorService executor = Executors.newFixedThreadPool(NUMBER_OF_THREADS);
+			for (int i = 2; i < positiveTTD.getTrainSet().size(); i=Math.min(i+CHUNKING_SIZE,positiveTTD.getTrainSet().size())) {
+				executor.execute(handle(positiveTTD.getTrainSet(),i,Math.min(i+CHUNKING_SIZE, positiveTTD.getTrainSet().size()),true));
+				System.err.println("Thread started. POSITIVE");
+			}			
+			for (int i = 2; i < negativeTTD.getTrainSet().size(); i=Math.min(i+CHUNKING_SIZE,positiveTTD.getTrainSet().size())) {
+				executor.execute(handle(negativeTTD.getTrainSet(),i,Math.min(i+CHUNKING_SIZE, negativeTTD.getTrainSet().size()),false));
+				System.err.println("Thread started. NEGATIVE");
 			}
-
-			List<String> finalResult = new ArrayList<>();
-			finalResult.add(taggedLine);
-			finalResult.add(noTaggedLine);
-
-			int counter = 0 ;
-			for (Entry<Integer, Map<String, String>> entity : result.entrySet()) {
-				final Map<String, String> value = entity.getValue();
-				final StringBuilder l = new StringBuilder();
-				l.append(counter++).append(" ");
-				for (String s : value.values()) {
-					l.append(s).append(" ");
-				}
-				finalResult.add(l.toString());
-			}
-			FileUtil.writeDataToFile(finalResult, "CRF/"+(i-4)+"Positive.txt");
+			executor.shutdown();
+			executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+		}catch(Exception e) {
+			e.printStackTrace();
 		}
 
-		for (int i = 2; i < negativeTTD.getTrainSet().size(); i++) {
-			final String line = negativeTTD.getTrainSet().get(i);
-			final String taggedLine = line;
-			final String noTaggedLine = taggedLine.replaceAll("<.?r>", "").replaceAll("<.?a>","");
-			final Map<Integer, Map<String, String>> result = nerXmlParser(NERTagger.runTaggerXML(noTaggedLine));
+//		for (int i = 2; i < positiveTTD.getTrainSet().size(); i++) {
+//			final String line = positiveTTD.getTrainSet().get(i);
+//			final String taggedLine = line;
+//			final String noTaggedLine = taggedLine.replaceAll("<.?r>", "").replaceAll("<.?a>","");
+//			final Map<Integer, Map<String, String>> result = nerXmlParser(NERTagger.runTaggerXML(noTaggedLine));
+//
+//			addContextFeatures(result, 2);
+//
+//			try{
+//				addPositivLabels(result, taggedLine, noTaggedLine);
+//			}catch(Exception e) {
+//				continue;
+//			}
+//
+//			List<String> finalResult = new ArrayList<>();
+//			finalResult.add(taggedLine);
+//			finalResult.add(noTaggedLine);
+//
+//			for (Map<String, String> entity : result.values()) {
+//				final StringBuilder l = new StringBuilder();
+//				for(Entry<String, String> a:entity.entrySet()) {
+//					l.append(a.getKey()).append(" ");
+//				}
+//				finalResult.add(l.toString());
+//				break;
+//			}
+//
+//			for (Entry<Integer, Map<String, String>> entity : result.entrySet()) {
+//				final Map<String, String> value = entity.getValue();
+//				final StringBuilder l = new StringBuilder();
+//				for (String s : value.values()) {
+//					l.append(s).append(" ");
+//				}
+//				finalResult.add(l.toString());
+//			}
+//			FileUtil.writeDataToFile(finalResult, "CRF/"+(i-1)+"Positive.txt");
+//		}
 
-			addContextFeatures(result, 2);
+//		for (int i = 2; i < negativeTTD.getTrainSet().size(); i++) {
+//			final String line = negativeTTD.getTrainSet().get(i);
+//			final String taggedLine = line;
+//			final String noTaggedLine = taggedLine.replaceAll("<.?r>", "").replaceAll("<.?a>","");
+//			final Map<Integer, Map<String, String>> result = nerXmlParser(NERTagger.runTaggerXML(noTaggedLine));
+//
+//			addContextFeatures(result, 2);
+//
+//			addNegativeLabels(result);
+//
+//			List<String> finalResult = new ArrayList<>();
+//			finalResult.add(taggedLine);
+//			finalResult.add(noTaggedLine);
+//
+//			for (Map<String, String> entity : result.values()) {
+//				final StringBuilder l = new StringBuilder();
+//				for(Entry<String, String> a:entity.entrySet()) {
+//					l.append(a.getKey()).append(" ");
+//				}
+//				finalResult.add(l.toString());
+//				break;
+//			}
+//
+//			for (Entry<Integer, Map<String, String>> entity : result.entrySet()) {
+//				final Map<String, String> value = entity.getValue();
+//				final StringBuilder l = new StringBuilder();
+//				for (String s : value.values()) {
+//					l.append(s).append(" ");
+//				}
+//				finalResult.add(l.toString());
+//			}
+//			FileUtil.writeDataToFile(finalResult, "CRF/"+(i-1)+"Negative.txt");
+//		}
+	}
 
-			addNegativeLabels(result);
+	private static Runnable handle(List<String> data, int start, int end,boolean isPositive) {
+		System.err.println(start +" ---- " + end);
+		final Runnable r = () -> {
+			for (int i = start; i < end; i++) {
+				final String line = data.get(i);
+				final String taggedLine = line;
+				final String noTaggedLine = taggedLine.replaceAll("<.?r>", "").replaceAll("<.?a>","");
+				final Map<Integer, Map<String, String>> result = nerXmlParser(NERTagger.runTaggerXML(noTaggedLine));
 
-			List<String> finalResult = new ArrayList<>();
-			finalResult.add(taggedLine);
-			finalResult.add(noTaggedLine);
+				addContextFeatures(result, 2);
 
-			int counter = 0;
-			for (Entry<Integer, Map<String, String>> entity : result.entrySet()) {
-				final Map<String, String> value = entity.getValue();
-				final StringBuilder l = new StringBuilder();
-				l.append(counter++).append(" ");
-				for (String s : value.values()) {
-					l.append(s).append(" ");
+				try{
+					if(isPositive) {
+						addPositivLabels(result, taggedLine, noTaggedLine);
+					}else {
+						addNegativeLabels(result);
+					}
+				}catch(Exception e) {
+					continue;
 				}
-				finalResult.add(l.toString());
+
+				List<String> finalResult = new ArrayList<>();
+				finalResult.add(taggedLine);
+				finalResult.add(noTaggedLine);
+
+				for (Map<String, String> entity1 : result.values()) {
+					final StringBuilder l1 = new StringBuilder();
+					for(Entry<String, String> a:entity1.entrySet()) {
+						l1.append(a.getKey()).append(" ");
+					}
+					finalResult.add(l1.toString());
+					break;
+				}
+
+				for (Entry<Integer, Map<String, String>> entity2 : result.entrySet()) {
+					final Map<String, String> value = entity2.getValue();
+					final StringBuilder l2 = new StringBuilder();
+					for (String s : value.values()) {
+						l2.append(s).append(" ");
+					}
+					finalResult.add(l2.toString());
+				}
+				FileUtil.writeDataToFile(finalResult, "CRF/"+(i-1)+(isPositive?"Positive.txt":"Negative.txt"));
 			}
-			FileUtil.writeDataToFile(finalResult, "CRF/"+(i-4)+"Negative.txt");
-		}
+		};
+		return r;
 	}
 
 	private static void addNegativeLabels(Map<Integer, Map<String, String>> result) {
@@ -405,6 +493,7 @@ public class TrainMalletCustomCRFVersion2 {
 			final Map<String, String> features = new LinkedHashMap<>();
 			final NodeList nodeList = document.getElementsByTagName("*");
 			int wordPosition = 0;
+			int wordCounter = 0;
 			for (int i = 0; i < nodeList.getLength(); i++) {
 				final Node node = nodeList.item(i);
 				if (node.getNodeType() == Node.ELEMENT_NODE && node.getNodeName().equals("token")) {
@@ -414,12 +503,18 @@ public class TrainMalletCustomCRFVersion2 {
 
 							if (childNode.getNodeType() == Node.ELEMENT_NODE) {
 								if (childNode.getNodeName().equals("word")) {
+									features.put("ID", String.valueOf(wordCounter++));
 									features.put("word", childNode.getTextContent());
 									if (childNode.getTextContent().charAt(0) >= 65
 											&& childNode.getTextContent().charAt(0) <= 90) {
-										features.put("CAPITAL", "true");
+										features.put("STARTCAP", "true");
 									} else {
-										features.put("CAPITAL", "false");
+										features.put("STARTCAP", "false");
+									}
+									if(StringUtils.isAllUpperCase(childNode.getTextContent())) {
+										features.put("ALLCAP", "true");
+									}else {
+										features.put("ALLCAP", "false");
 									}
 								} else if (childNode.getNodeName().equals("lemma")) {
 									features.put("lemma", childNode.getTextContent());
@@ -428,11 +523,6 @@ public class TrainMalletCustomCRFVersion2 {
 								} else if (childNode.getNodeName().equals("NER")) {
 									features.put("NER", childNode.getTextContent());
 								}
-								// else if (childNode.getNodeName().equals("CharacterOffsetBegin")) {
-								// startPosition = Integer.parseInt(childNode.getTextContent());
-								// } else if (childNode.getNodeName().equals("CharacterOffsetEnd")) {
-								// endPosition = Integer.parseInt(childNode.getTextContent());
-								// }
 							}
 						}
 					}

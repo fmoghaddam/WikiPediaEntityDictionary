@@ -56,10 +56,6 @@ import util.MapUtil;
 public class DatasetGeneratorWithCategoryTrees4thVersion {
 
 	/**
-	 * Used when we add a result to a positive/negative dataset
-	 */
-	private static final String RESULT_FILE_SEPARATOR = "\t";
-	/**
 	 * This contains the positive and negative samples
 	 */
 	private static final Dataset DATASET = new Dataset();
@@ -276,7 +272,7 @@ public class DatasetGeneratorWithCategoryTrees4thVersion {
 
 			DATASET.printNegativeDatasetEasy();
 
-			// printDictionaryUsageStatisitcs();
+			printDictionaryUsageStatisitcs();
 		} catch (final Exception exception) {
 			exception.printStackTrace();
 		}
